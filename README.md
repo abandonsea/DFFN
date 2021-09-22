@@ -8,7 +8,7 @@ Pytorch 1.9.0
 
 CPU or GPU
 
-# Run the S-DMM
+# Run the DFFN (FILES STILL NOT ADDED)
 Please set your parameters in train.py or test.py before runing them. 
 
 To train, run:
