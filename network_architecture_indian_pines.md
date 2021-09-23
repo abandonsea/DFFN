@@ -92,11 +92,13 @@ Convolution filter parameters per stage:
 
 ## Dimension matching for stage 1
 - Convolution_eltwise4
+  - Num filters: 64, Padding: 1, Kernel size: 3, Stride: 4
 - BatchNorm_Convolution_eltwise4
 - Scale_Convolution_eltwise4
 
 ## Dimension matching for stage 2
 - Convolution_eltwise8
+  - Num filters: 64, Padding: 1, Kernel size: 3, Stride: 2
 - BatchNorm_Convolution_eltwise8
 - Scale_Convolution_eltwise8
 
