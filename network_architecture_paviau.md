@@ -6,6 +6,7 @@ Convolution filter parameters per stage:
 3. **High level**: Number of filters: 64, Padding: 1, Kernel size: 3, Stride: 1 (except when stated otherwise)
 
 A _Conv-block_ is defined as: convolution, batch norm and scale.
+The scale layer is a one-dimensional layer (array) with scale factors and a bias for each different band.
 
 ## Stage 1 (low level)
 #### Res-block 1
