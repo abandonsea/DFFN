@@ -140,6 +140,7 @@ class DFFN(nn.Module):
         # Softmax is done together with the Cross Entropy loss
         return out
 
+
 # Initiate weights of net
 def weights_init(m):
     classname = m.__class__.__name__
