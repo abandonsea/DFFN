@@ -57,7 +57,7 @@ class ResBlock(nn.Module):
         self.relu = nn.ReLU()
         self.conv_block1 = ConvBlock(input_channels, feature_dim, stride=stride)
         self.conv_block2 = ConvBlock(feature_dim, feature_dim=feature_dim)
-        self.identity_transform = identity
+        self.identity_transform = identity_transform
 
     def forward(self, x):
         if self.identity is not None:
