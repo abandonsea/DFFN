@@ -94,8 +94,9 @@ def get_dataset(dataset_name, target_folder='./Datasets/'):
     # Filter NaN out
     nan_mask = np.isnan(img.sum(axis=-1))
     if np.count_nonzero(nan_mask) > 0:
-        print(
-            "Warning: NaN have been found in the data. It is preferable to remove them beforehand. Learning on NaN data is disabled.")
+        print("Warning: NaN have been found in the data. "
+              "It is preferable to remove them beforehand. "
+              "Learning on NaN data is disabled.")
     img[nan_mask] = 0
     gt[nan_mask] = 0
     ignored_labels.append(0)
