@@ -74,6 +74,7 @@ class ResBlock(nn.Module):
 
 # Implementation of DFFN with the architecture used for PaviaU.
 # The sample size that was used is 23x23x5. The 5 channels are obtained by doing a PCA with the input data.
+# The given input size should result in a 5x5x64 feature map when all stages are fused.
 class DFFN(nn.Module):
     """DFFN architecture for PaviaU"""
 
