@@ -51,15 +51,19 @@ class ConvBlock(nn.Module):
 class ResBlock(nn.Module):
     """"Res-block with two conv-blocks"""
 
-    def __init__(self, input_channels, feature_dim=64, stride=1, final_relu=True):
+    def __init__(self, input_channels, feature_dim=64, stride=1, final_relu=True, identity_transform=None):
         super(ResBlock, self).__init__()
         self.final_relu = final_relu
         self.relu = nn.ReLU()
         self.conv_block1 = ConvBlock(input_channels, feature_dim, stride=stride)
         self.conv_block2 = ConvBlock(feature_dim, feature_dim=feature_dim)
+        self.identity_transform = identity
 
     def forward(self, x):
-        identity = x
+        if self.identity is not None:
+            identity = self.identity_transform(x)
+        else:
+            identity = x
         out = self.relu(self.conv_block1(x))
         out = self.conv_block2(out)
         out += identity
@@ -68,6 +72,8 @@ class ResBlock(nn.Module):
         return out
 
 
+# Implementation of DFFN with the architecture used for PaviaU.
+# The sample size that was used is 23x23x5. The 5 channels are obtained by doing a PCA with the input data.
 class DFFN(nn.Module):
     """DFFN architecture for PaviaU"""
 
@@ -85,16 +91,16 @@ class DFFN(nn.Module):
         self.block5 = ResBlock(16, feature_dim=16)
 
         # Stage 2
-        self.dim_reduction1 = ConvBlock(16, feature_dim=32, padding=0, kernel_size=1, stride=2)
-        self.block6 = ResBlock(16, feature_dim=32, stride=2)
+        dim_reduction1 = ConvBlock(16, feature_dim=32, padding=0, kernel_size=1, stride=2)
+        self.block6 = ResBlock(16, feature_dim=32, stride=2, identity_transform=dim_reduction1)
         self.block7 = ResBlock(32, feature_dim=32)
         self.block8 = ResBlock(32, feature_dim=32)
         self.block9 = ResBlock(32, feature_dim=32)
         self.block10 = ResBlock(32, feature_dim=32)
 
         # Stage 3
-        self.dim_reduction2 = ConvBlock(32, feature_dim=64, padding=0, kernel_size=1, stride=2)
-        self.block11 = ResBlock(32, feature_dim=64, stride=2)
+        dim_reduction2 = ConvBlock(32, feature_dim=64, padding=0, kernel_size=1, stride=2)
+        self.block11 = ResBlock(32, feature_dim=64, stride=2, identity_transform=dim_reduction2)
         self.block12 = ResBlock(64, feature_dim=64)
         self.block13 = ResBlock(64, feature_dim=64)
         self.block14 = ResBlock(64, feature_dim=64)
@@ -103,12 +109,35 @@ class DFFN(nn.Module):
         # Fuse stages
         self.dim_matching1 = ConvBlock(16, feature_dim=64, stride=4)
         self.dim_matching2 = ConvBlock(32, feature_dim=64, stride=2)
-        self.pool = nn.AvgPool2d(1, 1)
-        self.fc1 = nn.Linear(64, 9)
+        self.pool = nn.AvgPool2d(kernel_size=5)  # Input of this layer should have size 5x5x64
+        self.fc1 = nn.Linear(64, 9)  # PaviaU has 9 classes
 
     def forward(self, x):
-        #TODO: do it
-        return x
+        # Stage 1
+        out = self.relu(self.pre_block1(x))
+        out = self.block2(self.block1(out))
+        out = self.block4(self.block3(out))
+        out = self.block5(out)
+        stage1 = self.dim_matching1(out)
+
+        # Stage 2
+        out = self.block7(self.block6(out))
+        out = self.block9(self.block8(out))
+        out = self.block10(out)
+        stage2 = self.dim_matching2(out)
+
+        # Stage 3
+        out = self.block12(self.block11(out))
+        out = self.block14(self.block13(out))
+        out = self.block15(out)
+
+        # Fuse stages
+        out += stage1 + stage2
+        out = self.pool(out)
+        out = out.view(-1, 64)
+        out = self.fc1(out)
+        # Softmax is done together with the Cross Entropy loss
+        return out
 
 # Initiate weights of net
 def weights_init(m):
