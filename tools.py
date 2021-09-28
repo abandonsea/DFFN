@@ -15,7 +15,7 @@ import os
 from tqdm import tqdm
 
 
-################### get data set
+# Get data set
 def get_dataset(dataset_name, target_folder='./Datasets/'):
     palette = None
     folder = target_folder + dataset_name + '/'
@@ -111,7 +111,7 @@ def get_dataset(dataset_name, target_folder='./Datasets/'):
     return img, gt, label_values, ignored_labels, rgb_bands, palette
 
 
-####################### get train test split
+# Get train test split
 def sample_gt(gt, train_size, mode='fixed_withone'):
     indices = np.nonzero(gt)
     X = list(zip(*indices))  # x,y features
@@ -155,7 +155,7 @@ def sample_gt(gt, train_size, mode='fixed_withone'):
     return train_gt, test_gt
 
 
-###################################### torch datasets
+# Torch datasets
 class HyperX(torch.utils.data.Dataset):
 
     def __init__(self, data, gt, dataset_name, patch_size=5, flip_argument=True, rotated_argument=True):
@@ -258,7 +258,7 @@ class HyperX(torch.utils.data.Dataset):
         return data, label - 1
 
 
-############################################################ save model
+# Save model
 def save_model(model, model_name, dataset_name, **kwargs):
     model_dir = './checkpoints/' + model_name + "/" + dataset_name + "/"
     if not os.path.isdir(model_dir):
@@ -271,7 +271,7 @@ def save_model(model, model_name, dataset_name, **kwargs):
         torch.save(model.state_dict(), model_dir + filename2 + '.pth')
 
 
-############################################################ save and get samples/results
+# Save and get samples/results
 def get_sample(dataset_name, sample_size, run):
     sample_file = './trainTestSplit/' + dataset_name + '/sample' + str(sample_size) + '_run' + str(run) + '.mat'
     data = io.loadmat(sample_file)
@@ -304,6 +304,8 @@ def save_result(result, dataset_name, sample_size, run):
 
 
 # Generator function.
+# Creates a conditional context when using GPU or CPU.
+# This is a workaround to the existing code that forced the use of GPU.
 class ConditionalGpuContext:
     def __init__(self, gpu_device):
         self.gpu = gpu_device
@@ -320,4 +322,3 @@ class ConditionalGpuContext:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.is_available:
             self.device.__exit__(self, exc_type, exc_val, exc_tb)
-####################################################################
