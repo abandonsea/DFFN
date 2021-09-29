@@ -112,3 +112,65 @@ def load_dataset(dataset_name, target_folder='./Datasets/'):
         max_val = np.max(img[:, :, band])
         img[:, :, band] = (img[:, :, band] - min_val) / (max_val - min_val)
     return img, gt, label_values, ignored_labels, rgb_bands
+
+
+# Get train test split
+def sample_gt(gt, train_size, mode='fixed_with_one'):
+    indices = np.nonzero(gt)
+    x = list(zip(*indices))  # x,y features
+    y = gt[indices].ravel()  # classes
+    train_gt = np.zeros_like(gt)
+    test_gt = np.zeros_like(gt)
+    if train_size > 1:
+        train_size = int(train_size)
+        if mode == 'random':
+            train_size = float(train_size) / 100  # dengbin:20181011
+
+    if mode == 'random_with_one':
+        train_indices = []
+        test_gt = np.copy(gt)
+        for c in np.unique(gt):
+            if c == 0:
+                continue
+            indices = np.nonzero(gt == c)
+            x = list(zip(*indices))  # x,y features
+            train_len = int(np.ceil(train_size * len(x)))
+            train_indices += random.sample(x, train_len)
+        index = tuple(zip(*train_indices))
+        train_gt[index] = gt[index]
+        test_gt[index] = 0
+
+    elif mode == 'fixed_with_one':
+        train_indices = []
+        test_gt = np.copy(gt)
+        for c in np.unique(gt):
+            if c == 0:
+                continue
+            indices = np.nonzero(gt == c)
+            x = list(zip(*indices))  # x,y features
+
+            train_indices += random.sample(x, train_size)
+        index = tuple(zip(*train_indices))
+        train_gt[index] = gt[index]
+        test_gt[index] = 0
+    else:
+        raise ValueError("{} sampling is not implemented yet.".format(mode))
+    return train_gt, test_gt
+
+
+# Get samples for every run
+def get_sample(dataset_name, sample_size, run):
+    sample_file = './TrainTestSplit/' + dataset_name + '/sample' + str(sample_size) + '_run' + str(run) + '.mat'
+    data = io.loadmat(sample_file)
+    train_gt = data['train_gt']
+    test_gt = data['test_gt']
+    return train_gt, test_gt
+
+
+# Save samples for every run
+def save_sample(train_gt, test_gt, dataset_name, sample_size, run):
+    sample_dir = './TrainTestSplit/' + dataset_name + '/'
+    if not os.path.isdir(sample_dir):
+        os.makedirs(sample_dir)
+    sample_file = sample_dir + 'sample' + str(sample_size) + '_run' + str(run) + '.mat'
+    io.savemat(sample_file, {'train_gt': train_gt, 'test_gt': test_gt})
