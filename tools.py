@@ -115,7 +115,7 @@ def get_dataset(dataset_name, target_folder='./Datasets/'):
 # Get train test split
 def sample_gt(gt, train_size, mode='fixed_withone'):
     indices = np.nonzero(gt)
-    X = list(zip(*indices))  # x,y features
+    x = list(zip(*indices))  # x,y features
     y = gt[indices].ravel()  # classes
     train_gt = np.zeros_like(gt)
     test_gt = np.zeros_like(gt)
@@ -131,9 +131,9 @@ def sample_gt(gt, train_size, mode='fixed_withone'):
             if c == 0:
                 continue
             indices = np.nonzero(gt == c)
-            X = list(zip(*indices))  # x,y features
-            train_len = int(np.ceil(train_size * len(X)))
-            train_indices += random.sample(X, train_len)
+            x = list(zip(*indices))  # x,y features
+            train_len = int(np.ceil(train_size * len(x)))
+            train_indices += random.sample(x, train_len)
         index = tuple(zip(*train_indices))
         train_gt[index] = gt[index]
         test_gt[index] = 0
@@ -145,9 +145,9 @@ def sample_gt(gt, train_size, mode='fixed_withone'):
             if c == 0:
                 continue
             indices = np.nonzero(gt == c)
-            X = list(zip(*indices))  # x,y features
+            x = list(zip(*indices))  # x,y features
 
-            train_indices += random.sample(X, train_size)
+            train_indices += random.sample(x, train_size)
         index = tuple(zip(*train_indices))
         train_gt[index] = gt[index]
         test_gt[index] = 0
@@ -181,8 +181,8 @@ class HyperX(torch.utils.data.Dataset):
             if c == 0:
                 continue
             c_indices = np.nonzero(self.label == c)
-            X = list(zip(*c_indices))
-            self.indices += X
+            x = list(zip(*c_indices))
+            self.indices += x
 
     def resetGt(self, gt):
         self.label = gt
