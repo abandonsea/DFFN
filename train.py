@@ -18,22 +18,22 @@ from net import *
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# Datase settings
+# Dataset settings
 DATASET = 'PaviaU'  # PaviaU; KSC; Salinas
-SAMPLE_ALREADY = False  # whether randomly generated training samples are ready
-SAMPLE_SIZE = 10  # training samples per class
-BATCH_SIZE_PER_CLASS = SAMPLE_SIZE // 2  # batch size of each class
+FOLDER = './Datasets/'  # Dataset folder
 PATCH_SIZE = 5  # Hyper parameter: patch size
-FLIP_ARGUMENT = False  # whether need data argumentation of flipping data; default: False
-ROTATED_ARGUMENT = False  # whether need data argumentation of rotated data; default: False
-SAMPLING_MODE = 'fixed_withone'  # fixed number for each class
-FOLDER = './Datasets/'  # the dataset folder
+SAMPLE_SIZE = 10  # training samples per class
+SAMPLE_ALREADY = False  # whether randomly generated training samples are ready
+SAMPLING_MODE = 'fixed_with_one'  # fixed number for each class
+BATCH_SIZE_PER_CLASS = SAMPLE_SIZE // 2  # batch size of each class
+FLIP_ARGUMENT = False  # Whether use argumentation with flipping data; default: False
+ROTATED_ARGUMENT = False  # Whether use argumentation with rotated data; default: False
 
 # Hyper parameters
-NUM_RUNS = 1  # the running times of the experiments
-NUM_EPOCHS = 5
-TEST_NUM = 0  # the total number of test in the training process
-LEARNING_RATE = 0.1  # 0.01 good / 0.1 fast for SGD; 0.001 for Adam
+NUM_RUNS = 1  # The amount of time the whole experiment should run
+NUM_EPOCHS = 5  # Number of epochs per run
+TEST_NUM = 0  # The total number of tests during the training process
+LEARNING_RATE = 0.1
 MOMENTUM = 0.9
 
 
@@ -41,6 +41,10 @@ MOMENTUM = 0.9
 def train():
     # Load dataset
     img, gt, label_values, ignored_labels, rgb_bands = load_dataset(DATASET, FOLDER)
+    num_classes = len(label_values) - len(ignored_labels)
+    num_bands = img.shape[-1]
+
+    # TODO: Apply PCA!
 
     # Run training
     for run in range(NUM_RUNS):
