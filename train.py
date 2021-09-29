@@ -47,7 +47,7 @@ def train():
         print("Running an experiment with run {}/{}".format(run + 1, NUM_RUNS))
 
         train_loader = torch_data.DataLoader()
-        test_loader = torch_data.DataLoader()
+        # test_loader = torch_data.DataLoader()
 
         # Setup model, optimizer and loss
         model = DFFN().to(device)
