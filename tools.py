@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Oct 22 12:38:20 2018
+Created on Wed Sep 29 14:29 2021
 
-@author: dengbin
+@author: Pedro Vieira
+@description: Implements util functions to be used during train and/or test
 """
 
 import torch
@@ -15,9 +16,8 @@ import os
 from tqdm import tqdm
 
 
-# Get data set
-def get_dataset(dataset_name, target_folder='./Datasets/'):
-    palette = None
+# Load data set
+def load_dataset(dataset_name, target_folder='./Datasets/'):
     folder = target_folder + dataset_name + '/'
     if dataset_name == 'IndianPines':
         # load the image
@@ -63,7 +63,7 @@ def get_dataset(dataset_name, target_folder='./Datasets/'):
                         'Soil_vinyard_develop', 'Corn_senesced_green_weeds', 'Lettuce_romaine_4wk',
                         'Lettuce_romaine_5wk', 'Lettuce_romaine_6wk', 'Lettuce_romaine_7wk',
                         'Vinyard_untrained', 'Vinyard_vertical_trellis']
-        rgb_bands = (43, 21, 11)  # I don't sure
+        rgb_bands = (43, 21, 11)
         ignored_labels = [0]
     elif dataset_name == 'SalinaA':
         # Load the image
@@ -72,7 +72,7 @@ def get_dataset(dataset_name, target_folder='./Datasets/'):
         label_values = ['Undefined', 'Brocoli_green_weeds_1', 'Corn_senesced_green_weeds',
                         'Lettuce_romaine_4wk', 'Lettuce_romaine_5wk',
                         'Lettuce_romaine_6wk', 'Lettuce_romaine_7wk']
-        rgb_bands = (43, 21, 11)  # I don't sure
+        rgb_bands = (43, 21, 11)
         ignored_labels = [0]
     elif dataset_name == 'KSC':
         # Load the image
@@ -109,7 +109,7 @@ def get_dataset(dataset_name, target_folder='./Datasets/'):
         min_val = np.min(img[:, :, band])
         max_val = np.max(img[:, :, band])
         img[:, :, band] = (img[:, :, band] - min_val) / (max_val - min_val)
-    return img, gt, label_values, ignored_labels, rgb_bands, palette
+    return img, gt, label_values, ignored_labels, rgb_bands
 
 
 # Get train test split
