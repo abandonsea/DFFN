@@ -8,7 +8,7 @@ Created on Wed Sep 29 14:29 2021
 """
 
 import torch
-import torch.utils.data as torch_data
+from torch.utils.data import Dataset, DataLoader
 import numpy as np
 import tqdm
 
@@ -21,7 +21,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # Dataset settings
 DATASET = 'PaviaU'  # PaviaU; KSC; Salinas
 FOLDER = './Datasets/'  # Dataset folder
-PATCH_SIZE = 5  # Hyper parameter: patch size
+PATCH_SIZE = 23  # Hyper parameter: patch size
+PATCH_BANDS = 5  # Number of bands after applying PCA
 SAMPLE_SIZE = 10  # training samples per class
 SAMPLING_MODE = 'fixed_with_one'  # fixed number for each class
 HAS_SAMPLE = False  # whether randomly generated training samples are ready
@@ -40,11 +41,10 @@ MOMENTUM = 0.9
 # Train
 def train():
     # Load dataset
-    img, gt, label_values, ignored_labels, rgb_bands = load_dataset(DATASET, FOLDER)
-    num_classes = len(label_values) - len(ignored_labels)
-    num_bands = img.shape[-1]
-
-    # TODO: Apply PCA!
+    dataset = HSIDataset(DATASET, FOLDER)
+    # Apply PCA and normalize dataset
+    dataset.apply_image_preprocessing(PATCH_BANDS)
+    num_classes = dataset.num_classes()
 
     # Run training
     for run in range(NUM_RUNS):
@@ -54,11 +54,11 @@ def train():
         if HAS_SAMPLE:
             train_gt, test_gt = get_sample(DATASET, SAMPLE_SIZE, run)
         else:
-            train_gt, test_gt = sample_gt(gt, SAMPLE_SIZE, mode=SAMPLING_MODE)
+            train_gt, test_gt = dataset.split_ground_truth(SAMPLE_SIZE, mode=SAMPLING_MODE)
             save_sample(train_gt, test_gt, DATASET, SAMPLE_SIZE, run)
 
-        train_loader = torch_data.DataLoader()
-        # test_loader = torch_data.DataLoader()
+        train_loader = DataLoader()
+        # test_loader = DataLoader()
 
         # Setup model, optimizer and loss
         model = DFFN().to(device)
