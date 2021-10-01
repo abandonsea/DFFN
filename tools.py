@@ -8,20 +8,23 @@ Created on Wed Sep 29 14:29 2021
 """
 
 import torch
-from sklearn.decomposition import PCA
+from torch.utils.data import Dataset
 import numpy as np
 from scipy import io
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 import random
 import os
-from tqdm import tqdm
 
 
 # Dataset class
-class HSIDataset:
-    def __init__(self, dataset_name, target_folder='./Datasets/'):
-        """Returns dataset raw image and labels"""
+class HSIData:
+    """Stores dataset raw image and labels and applies pre-processing"""
 
+    def __init__(self, dataset_name, target_folder='./Datasets/', num_bands=5):
+        self.dataset_name = dataset_name
         folder = target_folder + dataset_name + '/'
+
         self.rgb_bands = None
         self.label_values = None
         if dataset_name == 'IndianPines':
@@ -65,23 +68,29 @@ class HSIDataset:
         ignored_labels = [0]
         self.ignored_labels = list(set(ignored_labels))
 
-        self.raw_image = np.asarray(img, dtype='float32')
+        img = np.asarray(img, dtype='float32')
+        self.image, self.pca, self.scale = self.apply_dimension_reduction(img, num_bands)
 
-    def apply_image_preprocessing(self, num_bands):
-        # TODO: implement PCA (scikit-learn)
-        num_bands = self.raw_image.shape[-1]
+    @staticmethod
+    def apply_dimension_reduction(image, num_bands=5):
+        # Normalize data before applying PCA. Range [-1, 1]
+        scaler = StandardScaler()
+        scaler.fit(image)
+        norm1_img = scaler.transform(image)
 
-        # Normalize data
-        img = self.raw_image
+        # Apply PCA to reduce the number of bands to num_bands
+        pca = PCA(int(num_bands))
+        pca.fit(norm1_img)
+        pca_img = pca.transform(norm1_img)
+
+        # Normalize data again, per band. Range [0, 1]
+        norm2_img = pca_img
         for band in range(num_bands):
-            min_val = np.min(img[:, :, band])
-            max_val = np.max(img[:, :, band])
-            img[:, :, band] = (img[:, :, band] - min_val) / (max_val - min_val)
-        return img
+            min_val = np.min(norm2_img[:, :, band])
+            max_val = np.max(norm2_img[:, :, band])
+            norm2_img[:, :, band] = (norm2_img[:, :, band] - min_val) / (max_val - min_val)
 
-    def num_classes(self):
-        len(self.label_values) - len(self.ignored_labels)
-        return
+        return norm2_img, pca, scaler
 
     # Split ground-truth pixels
     def split_ground_truth(self, train_size=0.75, max_train_samples=None):
@@ -110,24 +119,85 @@ class HSIDataset:
 
         return train_gt, test_gt
 
-    def get_train_test_samples(self):
-        # TODO: Get train and test samples for training (use matlab code as inspiration)
-        return
+    # Load samples from hard drive for every run.
+    def load_samples(self, num_samples, run):
+        sample_file = './TrainTestSplit/' + self.dataset_name + '/sample' + str(num_samples) + '_run' + str(run) + '.mat'
+        data = io.loadmat(sample_file)
+        train_gt = data['train_gt']
+        test_gt = data['test_gt']
+        return train_gt, test_gt
+
+    # Save samples for every run.
+    def save_samples(self, train_gt, test_gt, num_samples, run):
+        sample_dir = './TrainTestSplit/' + self.dataset_name + '/'
+        if not os.path.isdir(sample_dir):
+            os.makedirs(sample_dir)
+        sample_file = sample_dir + 'sample' + str(num_samples) + '_run' + str(run) + '.mat'
+        io.savemat(sample_file, {'train_gt': train_gt, 'test_gt': test_gt})
 
 
-# Get samples for every run
-def get_sample(dataset_name, sample_size, run):
-    sample_file = './TrainTestSplit/' + dataset_name + '/sample' + str(sample_size) + '_run' + str(run) + '.mat'
-    data = io.loadmat(sample_file)
-    train_gt = data['train_gt']
-    test_gt = data['test_gt']
-    return train_gt, test_gt
+# Dataset class based on PyTorch's
+class HSIDataset(Dataset):
+    """Dataset class based on PyTorch's"""
 
+    def __init__(self, data, gt, sample_size=23, data_augmentation=True):
+        super(HSIDataset, self).__init__()
+        self.sample_size = sample_size
+        self.data_augmentation = data_augmentation
 
-# Save samples for every run
-def save_sample(train_gt, test_gt, dataset_name, sample_size, run):
-    sample_dir = './TrainTestSplit/' + dataset_name + '/'
-    if not os.path.isdir(sample_dir):
-        os.makedirs(sample_dir)
-    sample_file = sample_dir + 'sample' + str(sample_size) + '_run' + str(run) + '.mat'
-    io.savemat(sample_file, {'train_gt': train_gt, 'test_gt': test_gt})
+        # Add padding according to sample_size
+        pad_size = sample_size // 2
+        self.data = np.pad(data, ((pad_size, pad_size), (pad_size, pad_size), (0, 0)), mode='symmetric')
+        self.label = np.pad(gt, pad_size, mode='constant')
+
+        # Get indices to data based on ground-truth
+        self.indices = []
+        for c in np.unique(self.label):
+            if c == 0:
+                continue
+            class_indices = np.nonzero(self.label == c)
+            index_tuples = list(zip(*class_indices))
+            self.indices += index_tuples
+
+    def __len__(self):
+        return len(self.indices)
+
+    def __getitem__(self, i):
+        x, y = self.indices[i]
+        pad_size = self.sample_size // 2
+        x1, y1, x2, y2 = x - pad_size, y - pad_size, x + pad_size, y + pad_size
+        data = self.data[x1:x2, y1:y2]
+        label = self.label[x, y] - 1  # Subtract one to ignore label 0 (unlabeled)
+
+        if self.data_augmentation:
+            # Perform data augmentation
+            data = self.apply_data_augmentation(data)
+
+        # Transpose data for it to match the expected torch dimensions
+        data = np.asarray(np.copy(data).transpose((2, 0, 1)), dtype='float32')
+        label = np.asarray(np.copy(label), dtype='int64')
+
+        # Load the data into PyTorch tensors
+        data = torch.from_numpy(data)
+        label = torch.from_numpy(label)
+        return data, label
+
+    @staticmethod
+    def apply_data_augmentation(*arrays):
+        # Probability of flipping data
+        p1 = np.random.random()
+        if p1 < 0.334:
+            arrays = [np.fliplr(arr) for arr in arrays]
+        elif p1 < 0.667:
+            arrays = [np.flipud(arr) for arr in arrays]
+
+        # Probability of rotating image
+        p2 = np.random.random()
+        if p2 < 0.25:
+            arrays = [np.rot90(arr) for arr in arrays]
+        elif p2 < 0.5:
+            arrays = [np.rot90(arr, 2) for arr in arrays]
+        elif p2 < 0.75:
+            arrays = [np.rot90(arr, 3) for arr in arrays]
+
+        return arrays
