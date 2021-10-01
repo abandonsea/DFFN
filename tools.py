@@ -24,7 +24,6 @@ class HSIDataset:
         folder = target_folder + dataset_name + '/'
         self.rgb_bands = None
         self.label_values = None
-        ignored_labels = [0]
         if dataset_name == 'IndianPines':
             img = io.loadmat(folder + 'Indian_pines_corrected.mat')['indian_pines_corrected']
             gt = io.loadmat(folder + 'Indian_pines_gt.mat')['indian_pines_gt']
@@ -63,7 +62,7 @@ class HSIDataset:
         img[nan_mask] = 0
         gt[nan_mask] = 0
         self.ground_truth = gt
-        ignored_labels.append(0)
+        ignored_labels = [0]
         self.ignored_labels = list(set(ignored_labels))
 
         self.raw_image = np.asarray(img, dtype='float32')
