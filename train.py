@@ -8,7 +8,7 @@ Created on Wed Sep 29 14:29 2021
 """
 
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 import numpy as np
 import tqdm
 
@@ -24,7 +24,7 @@ FOLDER = './Datasets/'  # Dataset folder
 SAMPLE_SIZE = 23  # Hyper parameter: patch size
 SAMPLE_BANDS = 5  # Number of bands after applying PCA
 GENERATE_SAMPLE = False  # whether randomly generated training samples are ready
-SAMPLES_PER_CLASS = None  # max training samples per class (use None for no limit)
+MAX_SAMPLES_PER_CLASS = None  # max training samples per class (use None for no limit)
 # BATCH_SIZE_PER_CLASS = SAMPLES_PER_CLASS // 2  # batch size of each class
 TRAIN_SPLIT = 0.7
 FLIP_ARGUMENT = False  # Whether use argumentation with flipping data; default: False
@@ -40,11 +40,8 @@ MOMENTUM = 0.9
 
 # Train
 def train():
-    # Load dataset
-    dataset = HSIDataset(DATASET, FOLDER)
-    # Apply PCA and normalize dataset
-    dataset.apply_image_preprocessing(SAMPLE_BANDS)
-    # num_classes = dataset.num_classes()
+    # Load raw dataset, apply PCA and normalize dataset.
+    data = HSIData(DATASET, FOLDER, SAMPLE_BANDS)
 
     # Run training
     for run in range(NUM_RUNS):
@@ -52,13 +49,18 @@ def train():
 
         # Generate samples or read existing samples
         if GENERATE_SAMPLE:
-            train_gt, test_gt = dataset.split_ground_truth(TRAIN_SPLIT, SAMPLES_PER_CLASS)
-            save_sample(train_gt, test_gt, DATASET, SAMPLES_PER_CLASS, run)
+            train_gt, test_gt = data.split_ground_truth(TRAIN_SPLIT, MAX_SAMPLES_PER_CLASS)
+            data.save_samples(train_gt, test_gt, MAX_SAMPLES_PER_CLASS, run)
         else:
-            train_gt, test_gt = get_sample(DATASET, SAMPLES_PER_CLASS, run)
+            train_gt, test_gt = data.load_samples(MAX_SAMPLES_PER_CLASS, run)
 
-        train_loader = DataLoader()
-        # test_loader = DataLoader()
+        # Create train and test dataset objects
+        train_dataset = HSIDataset(data.image, train_gt, SAMPLE_SIZE, data_augmentation=True)
+        test_dataset = HSIDataset(data.image, test_gt, SAMPLE_SIZE, data_augmentation=False)
+
+        # Create train and test loaders
+        train_loader = DataLoader(train_dataset)
+        test_loader = DataLoader(test_dataset)
 
         # Setup model, optimizer and loss
         model = DFFN().to(device)
