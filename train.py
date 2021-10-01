@@ -21,10 +21,9 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # Dataset settings
 DATASET = 'PaviaU'  # PaviaU; KSC; Salinas
 FOLDER = './Datasets/'  # Dataset folder
-PATCH_SIZE = 23  # Hyper parameter: patch size
-PATCH_BANDS = 5  # Number of bands after applying PCA
-
-HAS_SAMPLE = False  # whether randomly generated training samples are ready
+SAMPLE_SIZE = 23  # Hyper parameter: patch size
+SAMPLE_BANDS = 5  # Number of bands after applying PCA
+GENERATE_SAMPLE = False  # whether randomly generated training samples are ready
 SAMPLES_PER_CLASS = None  # max training samples per class (use None for no limit)
 # BATCH_SIZE_PER_CLASS = SAMPLES_PER_CLASS // 2  # batch size of each class
 TRAIN_SPLIT = 0.7
@@ -44,19 +43,19 @@ def train():
     # Load dataset
     dataset = HSIDataset(DATASET, FOLDER)
     # Apply PCA and normalize dataset
-    dataset.apply_image_preprocessing(PATCH_BANDS)
+    dataset.apply_image_preprocessing(SAMPLE_BANDS)
     # num_classes = dataset.num_classes()
 
     # Run training
     for run in range(NUM_RUNS):
         print("Running an experiment with run {}/{}".format(run + 1, NUM_RUNS))
 
-        # Sample random training spectra
-        if HAS_SAMPLE:
-            train_gt, test_gt = get_sample(DATASET, SAMPLES_PER_CLASS, run)
-        else:
+        # Generate samples or read existing samples
+        if GENERATE_SAMPLE:
             train_gt, test_gt = dataset.split_ground_truth(TRAIN_SPLIT, SAMPLES_PER_CLASS)
             save_sample(train_gt, test_gt, DATASET, SAMPLES_PER_CLASS, run)
+        else:
+            train_gt, test_gt = get_sample(DATASET, SAMPLES_PER_CLASS, run)
 
         train_loader = DataLoader()
         # test_loader = DataLoader()
