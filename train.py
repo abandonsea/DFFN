@@ -23,10 +23,11 @@ DATASET = 'PaviaU'  # PaviaU; KSC; Salinas
 FOLDER = './Datasets/'  # Dataset folder
 PATCH_SIZE = 23  # Hyper parameter: patch size
 PATCH_BANDS = 5  # Number of bands after applying PCA
-SAMPLE_SIZE = 10  # training samples per class
-SAMPLING_MODE = 'fixed_with_one'  # fixed number for each class
+
 HAS_SAMPLE = False  # whether randomly generated training samples are ready
-BATCH_SIZE_PER_CLASS = SAMPLE_SIZE // 2  # batch size of each class
+SAMPLES_PER_CLASS = None  # max training samples per class (use None for no limit)
+# BATCH_SIZE_PER_CLASS = SAMPLES_PER_CLASS // 2  # batch size of each class
+TRAIN_SPLIT = 0.7
 FLIP_ARGUMENT = False  # Whether use argumentation with flipping data; default: False
 ROTATED_ARGUMENT = False  # Whether use argumentation with rotated data; default: False
 
@@ -44,7 +45,7 @@ def train():
     dataset = HSIDataset(DATASET, FOLDER)
     # Apply PCA and normalize dataset
     dataset.apply_image_preprocessing(PATCH_BANDS)
-    num_classes = dataset.num_classes()
+    # num_classes = dataset.num_classes()
 
     # Run training
     for run in range(NUM_RUNS):
@@ -52,10 +53,10 @@ def train():
 
         # Sample random training spectra
         if HAS_SAMPLE:
-            train_gt, test_gt = get_sample(DATASET, SAMPLE_SIZE, run)
+            train_gt, test_gt = get_sample(DATASET, SAMPLES_PER_CLASS, run)
         else:
-            train_gt, test_gt = dataset.split_ground_truth(SAMPLE_SIZE, mode=SAMPLING_MODE)
-            save_sample(train_gt, test_gt, DATASET, SAMPLE_SIZE, run)
+            train_gt, test_gt = dataset.split_ground_truth(TRAIN_SPLIT, SAMPLES_PER_CLASS)
+            save_sample(train_gt, test_gt, DATASET, SAMPLES_PER_CLASS, run)
 
         train_loader = DataLoader()
         # test_loader = DataLoader()
