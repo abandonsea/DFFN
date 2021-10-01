@@ -84,48 +84,31 @@ class HSIDataset:
         len(self.label_values) - len(self.ignored_labels)
         return
 
-    # Get train test split
-    def split_ground_truth(self, train_size, mode='fixed_with_one'):
-        # TODO: Optimized code and check for correctness
-        indices = np.nonzero(self.ground_truth)
-        x = list(zip(*indices))  # x,y features
-        y = self.ground_truth[indices].ravel()  # classes
+    # Split ground-truth pixels
+    def split_ground_truth(self, train_size=0.75, max_train_samples=None):
         train_gt = np.zeros_like(self.ground_truth)
-        test_gt = np.zeros_like(self.ground_truth)
+        test_gt = np.copy(self.ground_truth)
+
+        # If train_size <= 1, use as a fraction of the dataset.
+        # If train_size > 1, use as a percentage value and divide by 100.
         if train_size > 1:
-            train_size = int(train_size)
-            if mode.find('random') != -1:
-                train_size = float(train_size) / 100
+            train_size = float(train_size) / 100
 
-        if mode == 'random_with_one':
-            train_indices = []
-            test_gt = np.copy(self.ground_truth)
-            for c in np.unique(self.ground_truth):
-                if c == 0:
-                    continue
-                indices = np.nonzero(self.ground_truth == c)
-                x = list(zip(*indices))  # x,y features
-                train_len = int(np.ceil(train_size * len(x)))
-                train_indices += random.sample(x, train_len)
-            index = tuple(zip(*train_indices))
-            train_gt[index] = self.ground_truth[index]
-            test_gt[index] = 0
+        train_index_list = []
+        for c in np.unique(self.ground_truth):
+            if c == 0:
+                continue
+            class_indices = np.nonzero(self.ground_truth == c)
+            index_tuples = list(zip(*class_indices))  # Tuples with (x, y) index values
 
-        elif mode == 'fixed_with_one':
-            train_indices = []
-            test_gt = np.copy(self.ground_truth)
-            for c in np.unique(self.ground_truth):
-                if c == 0:
-                    continue
-                indices = np.nonzero(self.ground_truth == c)
-                x = list(zip(*indices))  # x,y features
+            num_train_samples = int(np.ceil(train_size * len(index_tuples)))
+            train_len = min(filter(lambda s: s is not None, [max_train_samples, num_train_samples]))
+            train_index_list += random.sample(index_tuples, train_len)
 
-                train_indices += random.sample(x, train_size)
-            index = tuple(zip(*train_indices))
-            train_gt[index] = self.ground_truth[index]
-            test_gt[index] = 0
-        else:
-            raise ValueError("{} sampling is not implemented yet.".format(mode))
+        train_indices = tuple(zip(*train_index_list))
+        train_gt[train_indices] = self.ground_truth[train_indices]
+        test_gt[train_indices] = 0
+
         return train_gt, test_gt
 
     def get_train_test_samples(self):
@@ -149,53 +132,3 @@ def save_sample(train_gt, test_gt, dataset_name, sample_size, run):
         os.makedirs(sample_dir)
     sample_file = sample_dir + 'sample' + str(sample_size) + '_run' + str(run) + '.mat'
     io.savemat(sample_file, {'train_gt': train_gt, 'test_gt': test_gt})
-
-# Adapts matlab code
-# def generate_index(dataset, dataset_gt, no_classes):
-#     per_class_num = []
-#     if dataset == 'indian_pines':
-#         per_class_num = [5, 143, 83, 24, 49, 73, 3, 48, 2, 98, 245, 60, 21, 126, 39, 10]
-#         # For Indian Pines: 10 % sampling.
-#     elif dataset == 'paviau':
-#         per_class_num = [132, 372, 42, 62, 27, 101, 27, 74, 19]
-#         # For University of Pavia: 2 % sampling.
-#     elif dataset == 'salinas':
-#         per_class_num = [11, 19, 10, 7, 14, 20, 18, 57, 32, 17, 6, 10, 5, 6, 37, 10]
-#         # For Salinas: 0.5 % sampling.
-#
-#     Train_Label = []
-#     Train_index = []
-#     train_data = []
-#     test_data = []
-#     train_label = []
-#     test_label = []
-#     train_index = []
-#     test_index = []
-#     index_len = []
-#
-#     for class_id in range(1, no_classes + 1):
-#         label_gt = np.array(dataset_gt)
-#         index_ii = np.where(label_gt == class_id)
-#         rand_order = range(index_ii.shape[0]) # TODO: Random permutation
-#         class_ii = np.ones(index_ii.shape[0]) * class_id
-#         Train_Label.append(class_ii)
-#         Train_index.append(index_ii)
-#
-#         num_train = per_class_num[class_id]
-#         # num_train = floor(length(index_ii) * percent)
-#         train_ii = rand_order(:, 1: num_train)
-#         train_index = [train_index index_ii(train_ii)]
-#         # train_index = [train_index index_ii(train_ii)]
-#
-#         test_index_temp = index_ii
-#         test_index_temp(:, train_ii)=[]
-#         test_index = [test_index test_index_temp]
-#         # test_index = [test_index test_index_temp]
-#
-#         train_label = [train_label class_ii(:, 1: num_train)]
-#         test_label = [test_label class_ii(num_train + 1:end)]
-#
-#     unlabeled_index = find(label_gt == 0)
-#     order = randperm(length(unlabeled_index))
-#     unlabeled_index = unlabeled_index(order)
-#     unlabeled_label = zeros(1, length(unlabeled_index))
