@@ -21,21 +21,18 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # Dataset settings
 DATASET = 'PaviaU'  # PaviaU; KSC; Salinas
 FOLDER = './Datasets/'  # Dataset folder
+TRAIN_SPLIT = 0.7  # Fraction from the dataset used for training
 SAMPLE_SIZE = 23  # Hyper parameter: patch size
 SAMPLE_BANDS = 5  # Number of bands after applying PCA
-GENERATE_SAMPLE = False  # whether randomly generated training samples are ready
-MAX_SAMPLES_PER_CLASS = None  # max training samples per class (use None for no limit)
-# BATCH_SIZE_PER_CLASS = SAMPLES_PER_CLASS // 2  # batch size of each class
-TRAIN_SPLIT = 0.7
-FLIP_ARGUMENT = False  # Whether use argumentation with flipping data; default: False
-ROTATED_ARGUMENT = False  # Whether use argumentation with rotated data; default: False
+GENERATE_SAMPLE = True  # Whether the samples should be generated (False to load previously saved samples)
+MAX_SAMPLES_PER_CLASS = 40  # max training samples per class (use None for no limit)
 
 # Hyper parameters
 NUM_RUNS = 1  # The amount of time the whole experiment should run
 NUM_EPOCHS = 5  # Number of epochs per run
-TEST_NUM = 0  # The total number of tests during the training process
-LEARNING_RATE = 0.1
-MOMENTUM = 0.9
+LEARNING_RATE = 0.1  # Initial learning rate
+MOMENTUM = 0.9  # Momentum of optimizer
+PRINT_FREQUENCY = 50  # The amount of iterations between every step/loss print
 
 
 # Train
@@ -67,9 +64,12 @@ def train():
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(model.parameters(), lr=LEARNING_RATE)
 
+        # Run epochs
         total_steps = len(train_loader)
         for epoch in range(NUM_EPOCHS):
-            print("Running epoch {}/{}".format(epoch + 1, NUM_EPOCHS))
+            print("RUNNING EPOCH {}/{}".format(epoch + 1, NUM_EPOCHS))
+
+            # Run iterations
             for i, (images, labels) in enumerate(train_loader):
                 # image should have size 23x23x5
                 images = images.to(device)
@@ -84,7 +84,8 @@ def train():
                 loss.backward()
                 optimizer.step()
 
-                if (i + 1) % 1000 == 0:
+                # Print steps and loss every PRINT_FREQUENCY
+                if (i + 1) % PRINT_FREQUENCY == 0:
                     print(f'Epoch [{epoch + 1}/{NUM_EPOCHS}], Step [{i + 1}/{total_steps}], Loss: {loss.item():.4f}')
 
         print("Finished training!")
@@ -95,5 +96,5 @@ def main():
     train()
 
 
-if __name__ == main:
+if __name__ == '__main__':
     main()
