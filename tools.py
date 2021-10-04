@@ -69,14 +69,17 @@ class HSIData:
         self.ignored_labels = list(set(ignored_labels))
 
         img = np.asarray(img, dtype='float32')
-        self.image, self.pca, self.scale = self.apply_dimension_reduction(img, num_bands)
+        self.image, self.pca, self.scaler = self.apply_dimension_reduction(img, num_bands)
 
     @staticmethod
     def apply_dimension_reduction(image, num_bands=5):
+        image_height, image_width, image_bands = image.shape
+        flat_image = np.reshape(image, (image_height * image_width, image_bands))
+
         # Normalize data before applying PCA. Range [-1, 1]
-        scaler = StandardScaler()
-        scaler.fit(image)
-        norm1_img = scaler.transform(image)
+        sca = StandardScaler()
+        sca.fit(flat_image)
+        norm1_img = sca.transform(flat_image)
 
         # Apply PCA to reduce the number of bands to num_bands
         pca = PCA(int(num_bands))
@@ -86,11 +89,13 @@ class HSIData:
         # Normalize data again, per band. Range [0, 1]
         norm2_img = pca_img
         for band in range(num_bands):
-            min_val = np.min(norm2_img[:, :, band])
-            max_val = np.max(norm2_img[:, :, band])
-            norm2_img[:, :, band] = (norm2_img[:, :, band] - min_val) / (max_val - min_val)
+            min_val = np.min(norm2_img[:, band])
+            max_val = np.max(norm2_img[:, band])
+            norm2_img[:, band] = (norm2_img[:, band] - min_val) / (max_val - min_val)
 
-        return norm2_img, pca, scaler
+        out_img = np.reshape(norm2_img, (image_height, image_width, num_bands))
+
+        return out_img, pca, sca
 
     # Split ground-truth pixels
     def split_ground_truth(self, train_size=0.75, max_train_samples=None):
@@ -165,7 +170,7 @@ class HSIDataset(Dataset):
     def __getitem__(self, i):
         x, y = self.indices[i]
         pad_size = self.sample_size // 2
-        x1, y1, x2, y2 = x - pad_size, y - pad_size, x + pad_size, y + pad_size
+        x1, y1, x2, y2 = x - pad_size, y - pad_size, x + pad_size + 1, y + pad_size + 1
         data = self.data[x1:x2, y1:y2]
         label = self.label[x, y] - 1  # Subtract one to ignore label 0 (unlabeled)
 
@@ -183,21 +188,21 @@ class HSIDataset(Dataset):
         return data, label
 
     @staticmethod
-    def apply_data_augmentation(*arrays):
+    def apply_data_augmentation(data):
         # Probability of flipping data
         p1 = np.random.random()
         if p1 < 0.334:
-            arrays = [np.fliplr(arr) for arr in arrays]
+            data = np.fliplr(data)
         elif p1 < 0.667:
-            arrays = [np.flipud(arr) for arr in arrays]
+            data = np.flipud(data)
 
         # Probability of rotating image
         p2 = np.random.random()
         if p2 < 0.25:
-            arrays = [np.rot90(arr) for arr in arrays]
+            data = np.rot90(data)
         elif p2 < 0.5:
-            arrays = [np.rot90(arr, 2) for arr in arrays]
+            data = np.rot90(data, 2)
         elif p2 < 0.75:
-            arrays = [np.rot90(arr, 3) for arr in arrays]
+            data = np.rot90(data, 3)
 
-        return arrays
+        return data
