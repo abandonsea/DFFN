@@ -9,12 +9,12 @@ Pytorch 1.9.0
 
 CPU or GPU
 
-# Run the DFFN (STILL NOT FUNCTIONAL)
+# Run the DFFN
 Please set your parameters in train.py or test.py before running them. 
 
 To train, run:
 ```python
-# Still not functional
+# Still debugging
 python train.py
 ``` 
 
