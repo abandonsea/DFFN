@@ -24,7 +24,7 @@ class ScaleLayer(nn.Module):
             self.bias = torch.zeros(num_channels, requires_grad=True)
 
     def forward(self, x):
-        assert (x.size(1) == self.weights.size(1))
+        assert (x.size(1) == self.weights.size(0))
         for channel in range(x.size(1)):
             x[:, channel, :, :] *= self.weights[channel].item()
             if self.bias is not None:
@@ -60,10 +60,10 @@ class ResBlock(nn.Module):
         self.identity_transform = identity_transform
 
     def forward(self, x):
-        if self.identity is not None:
+        identity = x
+        if self.identity_transform is not None:
             identity = self.identity_transform(x)
-        else:
-            identity = x
+
         out = self.relu(self.conv_block1(x))
         out = self.conv_block2(out)
         out += identity
