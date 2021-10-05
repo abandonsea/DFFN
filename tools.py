@@ -13,6 +13,7 @@ import numpy as np
 from scipy import io
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+from sklearn.utils import shuffle
 import random
 import os
 
@@ -69,7 +70,7 @@ class HSIData:
         self.ignored_labels = list(set(ignored_labels))
 
         img = np.asarray(img, dtype='float32')
-        self.image, self.pca, self.scaler = self.apply_dimension_reduction(img, num_bands)
+        self.image, self.pca, _, _ = self.apply_dimension_reduction(img, num_bands)
 
     @staticmethod
     def apply_dimension_reduction(image, num_bands=5):
@@ -77,25 +78,23 @@ class HSIData:
         flat_image = np.reshape(image, (image_height * image_width, image_bands))
 
         # Normalize data before applying PCA. Range [-1, 1]
-        sca = StandardScaler()
-        sca.fit(flat_image)
-        norm1_img = sca.transform(flat_image)
+        sca1 = StandardScaler()
+        sca1.fit(flat_image)
+        norm1_img = sca1.transform(flat_image)
 
         # Apply PCA to reduce the number of bands to num_bands
         pca = PCA(int(num_bands))
         pca.fit(norm1_img)
         pca_img = pca.transform(norm1_img)
 
-        # Normalize data again, per band. Range [0, 1]
-        norm2_img = pca_img
-        for band in range(num_bands):
-            min_val = np.min(norm2_img[:, band])
-            max_val = np.max(norm2_img[:, band])
-            norm2_img[:, band] = (norm2_img[:, band] - min_val) / (max_val - min_val)
+        # Normalize data after applying PCA. Range [-1, 1] (Is it really necessary?)
+        sca2 = StandardScaler()
+        sca2.fit(pca_img)
+        norm2_img = sca2.transform(pca_img)
 
         out_img = np.reshape(norm2_img, (image_height, image_width, num_bands))
 
-        return out_img, pca, sca
+        return out_img, pca, sca1, sca2  # Returning transformers for future usage
 
     # Split ground-truth pixels
     def split_ground_truth(self, train_size=0.75, max_train_samples=None):
@@ -156,13 +155,16 @@ class HSIDataset(Dataset):
         self.label = np.pad(gt, pad_size, mode='constant')
 
         # Get indices to data based on ground-truth
-        self.indices = []
+        indices = []
         for c in np.unique(self.label):
             if c == 0:
                 continue
             class_indices = np.nonzero(self.label == c)
             index_tuples = list(zip(*class_indices))
-            self.indices += index_tuples
+            indices += index_tuples
+
+        # Shuffle indices to break label order
+        self.indices = shuffle(indices, random_state=0)
 
     def __len__(self):
         return len(self.indices)
