@@ -8,12 +8,15 @@ Created on Wed Sep 29 14:29 2021
 """
 
 import torch
+import torch.nn as nn
 from torch.utils.data import DataLoader
-import numpy as np
-import tqdm
 
 from tools import *
 from net import *
+
+# Use tensorboard
+from torch.utils.tensorboard import SummaryWriter
+writer = SummaryWriter('runs/code_test')
 
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -22,17 +25,20 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 DATASET = 'PaviaU'  # PaviaU; KSC; Salinas
 FOLDER = './Datasets/'  # Dataset folder
 TRAIN_SPLIT = 0.7  # Fraction from the dataset used for training
+BATCH_SIZE = 10  # Batch size for every iteration
 SAMPLE_SIZE = 23  # Hyper parameter: patch size
 SAMPLE_BANDS = 5  # Number of bands after applying PCA
 GENERATE_SAMPLE = True  # Whether the samples should be generated (False to load previously saved samples)
-MAX_SAMPLES_PER_CLASS = 40  # max training samples per class (use None for no limit)
+MAX_SAMPLES_PER_CLASS = 50  # max training samples per class (use None for no limit)
 
 # Hyper parameters
 NUM_RUNS = 1  # The amount of time the whole experiment should run
-NUM_EPOCHS = 5  # Number of epochs per run
+NUM_EPOCHS = 6  # Number of epochs per run
 LEARNING_RATE = 0.1  # Initial learning rate
 MOMENTUM = 0.9  # Momentum of optimizer
-PRINT_FREQUENCY = 50  # The amount of iterations between every step/loss print
+GAMMA = 0.1  # Gamma parameter for the lr scheduler
+SCHEDULER_STEP = 3  # Step size for the lr scheduler
+PRINT_FREQUENCY = 25  # The amount of iterations between every step/loss print
 
 
 # Train
@@ -56,13 +62,18 @@ def train():
         test_dataset = HSIDataset(data.image, test_gt, SAMPLE_SIZE, data_augmentation=False)
 
         # Create train and test loaders
-        train_loader = DataLoader(train_dataset)
-        test_loader = DataLoader(test_dataset)
+        train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
+        test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
 
         # Setup model, optimizer and loss
         model = DFFN().to(device)
         criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.SGD(model.parameters(), lr=LEARNING_RATE)
+        optimizer = torch.optim.SGD(model.parameters(), lr=LEARNING_RATE, momentum=MOMENTUM)
+
+        # Scheduler
+        step_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
+                                                            step_size=SCHEDULER_STEP,
+                                                            gamma=GAMMA)
 
         # Run epochs
         total_steps = len(train_loader)
