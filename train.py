@@ -3,18 +3,16 @@
 """
 Created on Wed Sep 29 14:29 2021
 
-@author: Pedro Vieira
-@description: Implements the train function for the DFFN network published in https://github.com/weiweisong415/Demo_DFFN_for_TGRS2018
-"""
+@author: Pedro Vieira @description: Implements the train function for the DFFN network published in
+https://github.com/weiweisong415/Demo_DFFN_for_TGRS2018 """
 
 import torch
-import torch.nn.functional as f
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from tools import *
 from net import *
-from test import test
+from test import test_model
 
 # Import tensorboard
 from torch.utils.tensorboard import SummaryWriter
@@ -48,7 +46,6 @@ SCHEDULER_STEP = 5000  # Step size for the lr scheduler
 # Other options
 PRINT_FREQUENCY = 50  # The amount of iterations between every step/loss print
 WRITE_FREQUENCY = 25  # The amount of iterations between every tensorboard update
-TEST_NETWORK = False  # Whether to test network immediately after training a run
 
 
 # Train
@@ -62,19 +59,20 @@ def train(writer=None):
 
         # Generate samples or read existing samples
         if GENERATE_SAMPLE:
-            # TODO: Add the option to also sample a validation set
-            train_gt, test_gt, _ = data.sample_dataset(TRAIN_SPLIT, VAL_SPLIT, MAX_SAMPLES_PER_CLASS)
-            data.save_samples(train_gt, test_gt, MAX_SAMPLES_PER_CLASS, run)
+            train_gt, test_gt, val_gt = data.sample_dataset(TRAIN_SPLIT, VAL_SPLIT, MAX_SAMPLES_PER_CLASS)
+            data.save_samples(train_gt, test_gt, val_gt, MAX_SAMPLES_PER_CLASS, run)
         else:
-            train_gt, test_gt = data.load_samples(MAX_SAMPLES_PER_CLASS, run)
+            train_gt, test_gt, val_gt = data.load_samples(MAX_SAMPLES_PER_CLASS, run)
 
         # Create train and test dataset objects
         train_dataset = HSIDataset(data.image, train_gt, SAMPLE_SIZE, data_augmentation=True)
         test_dataset = HSIDataset(data.image, test_gt, SAMPLE_SIZE, data_augmentation=False)
+        val_dataset = HSIDataset(data.image, val_gt, SAMPLE_SIZE, data_augmentation=False)
 
         # Create train and test loaders
         train_loader = DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True, num_workers=4)
         test_loader = DataLoader(test_dataset, batch_size=TEST_BATCH_SIZE, shuffle=False)
+        val_loader = DataLoader(val_dataset, batch_size=TEST_BATCH_SIZE, shuffle=False)
 
         # Setup model, optimizer and loss
         model = DFFN().to(device)
@@ -95,6 +93,7 @@ def train(writer=None):
             print("RUNNING EPOCH {}/{}".format(epoch + 1, NUM_EPOCHS))
 
             # Run iterations
+            last_loss = 0
             for i, (images, labels) in tqdm(enumerate(train_loader), total=len(train_loader)):
                 # image should have size 23x23x5
                 images = images.to(device)
@@ -114,6 +113,8 @@ def train(writer=None):
                 if (i + 1) % PRINT_FREQUENCY == 0:
                     tqdm.write(
                         f'\tEpoch [{epoch + 1}/{NUM_EPOCHS}], Step [{i + 1}/{total_steps}]\tLoss: {loss.item():.4f}')
+                if i + 1 == total_steps:
+                    last_loss = loss.item()
 
                 # Compute intermediate results for visualization
                 if writer is not None:
@@ -130,20 +131,20 @@ def train(writer=None):
 
             # Write it one last time per epoch
             tqdm.write(
-                f'\tEpoch [{epoch + 1}/{NUM_EPOCHS}], Step [{total_steps}/{total_steps}]\tLoss: {loss.item():.4f}')
+                f'\tEpoch [{epoch + 1}/{NUM_EPOCHS}], Step [{total_steps}/{total_steps}]\tLoss: {last_loss:.4f}')
+
+            # Run validation
+            if VAL_SPLIT > 0:
+                test_model(model, val_loader, writer)
 
         print("Finished training!")
-
-        # Run testing if selected
-        if TEST_NETWORK:
-            test(test_loader=test_loader, model=model, writer=writer)
 
 
 # Main function
 def main():
-    # writer = SummaryWriter('runs/code_test')
+    writer = SummaryWriter('runs/code_test')
     train()
-    # writer.close()
+    writer.close()
 
 
 if __name__ == '__main__':
