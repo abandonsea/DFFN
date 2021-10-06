@@ -39,6 +39,7 @@ def test(test_loader=None, model=None, writer=None, batch_size=BATCH_SIZE):
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     # Begin testing
+    # TODO: Add below code to a separate function and make this function iterate over runs (calling the new function)
     labels_pr = []
     prediction_pr = []
     with torch.no_grad():
@@ -65,6 +66,7 @@ def test(test_loader=None, model=None, writer=None, batch_size=BATCH_SIZE):
         acc = 100.0 * n_correct / n_samples
         print(f'accuracy = {acc}')
 
+        # TODO: Also add measures like OA, AA and kappa
         if writer is not None:
             # Accuracy per class
             classes = range(10)
