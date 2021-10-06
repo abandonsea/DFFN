@@ -27,6 +27,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 EXEC_NAME = 'exec_01'  # Name for the train execution (will be used to save all information)
 DATASET = 'PaviaU'  # PaviaU; KSC; Salinas
 FOLDER = './Datasets/'  # Dataset folder
+VAL_SPLIT = 0.1  # Fraction from the dataset used for validation
 TRAIN_SPLIT = 0.8  # Fraction from the dataset used for training
 TRAIN_BATCH_SIZE = 100  # Batch size for every train iteration
 TEST_BATCH_SIZE = 20  # Batch size for every test iteration
@@ -42,7 +43,7 @@ LEARNING_RATE = 0.1  # Initial learning rate
 MOMENTUM = 0.9  # Momentum of optimizer
 WEIGHT_DECAY = 1e-4  # Weight decay for the optimizer
 GAMMA = 0.1  # Gamma parameter for the lr scheduler
-SCHEDULER_STEP = 100  # Step size for the lr scheduler
+SCHEDULER_STEP = 5000  # Step size for the lr scheduler
 
 # Other options
 PRINT_FREQUENCY = 50  # The amount of iterations between every step/loss print
@@ -62,7 +63,7 @@ def train(writer=None):
         # Generate samples or read existing samples
         if GENERATE_SAMPLE:
             # TODO: Add the option to also sample a validation set
-            train_gt, test_gt = data.split_ground_truth(TRAIN_SPLIT, MAX_SAMPLES_PER_CLASS)
+            train_gt, test_gt, _ = data.sample_dataset(TRAIN_SPLIT, VAL_SPLIT, MAX_SAMPLES_PER_CLASS)
             data.save_samples(train_gt, test_gt, MAX_SAMPLES_PER_CLASS, run)
         else:
             train_gt, test_gt = data.load_samples(MAX_SAMPLES_PER_CLASS, run)
@@ -81,9 +82,7 @@ def train(writer=None):
         optimizer = torch.optim.SGD(model.parameters(), lr=LEARNING_RATE, momentum=MOMENTUM, weight_decay=WEIGHT_DECAY)
 
         # Scheduler
-        step_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
-                                                            step_size=SCHEDULER_STEP,
-                                                            gamma=GAMMA)
+        lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=SCHEDULER_STEP, gamma=GAMMA)
 
         # Run epochs
         running_loss = 0.0
@@ -109,6 +108,7 @@ def train(writer=None):
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
+                lr_scheduler.step()
 
                 # Print steps and loss every PRINT_FREQUENCY
                 if (i + 1) % PRINT_FREQUENCY == 0:
@@ -141,9 +141,9 @@ def train(writer=None):
 
 # Main function
 def main():
-    writer = SummaryWriter('runs/code_test')
+    # writer = SummaryWriter('runs/code_test')
     train()
-    writer.close()
+    # writer.close()
 
 
 if __name__ == '__main__':
