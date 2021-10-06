@@ -96,32 +96,46 @@ class HSIData:
 
         return out_img, pca, sca1, sca2  # Returning transformers for future usage
 
-    # Split ground-truth pixels
-    def split_ground_truth(self, train_size=0.75, max_train_samples=None):
-        train_gt = np.zeros_like(self.ground_truth)
-        test_gt = np.copy(self.ground_truth)
-
-        # If train_size <= 1, use as a fraction of the dataset.
-        # If train_size > 1, use as a percentage value and divide by 100.
+    # Split ground-truth pixels into train, test, val
+    def sample_dataset(self, train_size=0.75, val_size=0, max_train_samples=None):
+        # If train/val_size <= 1, use as a fraction of the dataset.
+        # If train/val_size > 1, use as a percentage value and divide by 100.
         if train_size > 1:
             train_size = float(train_size) / 100
+        if val_size > 1:
+            val_size = float(val_size) / 100
+        assert (train_size + val_size < 1)
 
-        train_index_list = []
-        for c in np.unique(self.ground_truth):
+        # GEt train samples and non-train samples (== test samples, when there is no validation set)
+        train_gt, test_gt = self.split_ground_truth(self.ground_truth, train_size, max_train_samples)
+
+        val_gt = None
+        if val_size > 0:
+            relative_val_size = val_size / (1 - train_size)
+            val_gt, test_gt = self.split_ground_truth(test_gt, relative_val_size)
+
+        return train_gt, test_gt, val_gt
+
+    @staticmethod
+    def split_ground_truth(ground_truth, set1_size, max_samples=None):
+        set1_gt = np.zeros_like(ground_truth)
+        set2_gt = np.copy(ground_truth)
+
+        set1_index_list = []
+        for c in np.unique(ground_truth):
             if c == 0:
                 continue
-            class_indices = np.nonzero(self.ground_truth == c)
+            class_indices = np.nonzero(ground_truth == c)
             index_tuples = list(zip(*class_indices))  # Tuples with (x, y) index values
 
-            num_train_samples = int(np.ceil(train_size * len(index_tuples)))
-            train_len = min(filter(lambda s: s is not None, [max_train_samples, num_train_samples]))
-            train_index_list += random.sample(index_tuples, train_len)
+            num_samples_set1 = int(np.ceil(set1_size * len(index_tuples)))
+            set1_len = min(filter(lambda s: s is not None, [max_samples, num_samples_set1]))
+            set1_index_list += random.sample(index_tuples, set1_len)
 
-        train_indices = tuple(zip(*train_index_list))
-        train_gt[train_indices] = self.ground_truth[train_indices]
-        test_gt[train_indices] = 0
-
-        return train_gt, test_gt
+        set1_indices = tuple(zip(*set1_index_list))
+        set1_gt[set1_indices] = ground_truth[set1_indices]
+        set2_gt[set1_indices] = 0
+        return set1_gt, set2_gt
 
     # Load samples from hard drive for every run.
     def load_samples(self, num_samples, run):
