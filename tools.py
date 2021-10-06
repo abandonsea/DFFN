@@ -143,15 +143,16 @@ class HSIData:
         data = io.loadmat(sample_file)
         train_gt = data['train_gt']
         test_gt = data['test_gt']
-        return train_gt, test_gt
+        val_gt = data['val_gt']
+        return train_gt, test_gt, val_gt
 
     # Save samples for every run.
-    def save_samples(self, train_gt, test_gt, num_samples, run):
+    def save_samples(self, train_gt, test_gt, val_gt, num_samples, run):
         sample_dir = './TrainTestSplit/' + self.dataset_name + '/'
         if not os.path.isdir(sample_dir):
             os.makedirs(sample_dir)
         sample_file = sample_dir + 'sample' + str(num_samples) + '_run' + str(run) + '.mat'
-        io.savemat(sample_file, {'train_gt': train_gt, 'test_gt': test_gt})
+        io.savemat(sample_file, {'train_gt': train_gt, 'test_gt': test_gt, 'val_gt': val_gt})
 
 
 # Dataset class based on PyTorch's
