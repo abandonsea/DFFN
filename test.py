@@ -31,21 +31,26 @@ BATCH_SIZE = 20  # Batch size for every test iteration
 SAMPLE_SIZE = 23  # Window size for every sample/pixel input
 
 
-# Test DFFN
+# Test DFFN runs
 def test(test_loader=None, model=None, writer=None, batch_size=BATCH_SIZE):
     # Load data if none is provided
     if test_loader is None or model is None:
         test_dataset, model = load_test_environment(name=EXEC_NAME, folder=FOLDER, dataset=DATASET)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+    # TODO: Implement proper way of reading files and performing different tests
 
-    # Begin testing
-    # TODO: Add below code to a separate function and make this function iterate over runs (calling the new function)
+    # Test model from the current run
+    test_model(model, test_loader, writer)
+
+
+# Function for performing the tests for a given model and data loader
+def test_model(model, loader, writer=None):
     labels_pr = []
     prediction_pr = []
     with torch.no_grad():
         n_correct = 0
         n_samples = 0
-        for images, labels in test_loader:
+        for images, labels in loader:
             # Get input and compute model output
             images = images.to(device)
             labels = labels.to(device)
