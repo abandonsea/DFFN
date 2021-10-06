@@ -226,6 +226,7 @@ class HSIDataset(Dataset):
 
 
 # Load necessary test values
+# TODO: Implement this
 def load_test_environment(name, folder='./Datasets/', dataset='PaviaU'):
     # Dummies
     return 2, 4
