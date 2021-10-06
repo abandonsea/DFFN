@@ -14,6 +14,7 @@ from tqdm import tqdm
 
 from tools import *
 from net import *
+from test import test
 
 # Use tensorboard
 from torch.utils.tensorboard import SummaryWriter
