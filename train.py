@@ -40,6 +40,7 @@ NUM_RUNS = 1  # The amount of time the whole experiment should run
 NUM_EPOCHS = 6  # Number of epochs per run
 LEARNING_RATE = 0.1  # Initial learning rate
 MOMENTUM = 0.9  # Momentum of optimizer
+WEIGHT_DECAY = 1e-4  # Weight decay for the optimizer
 GAMMA = 0.1  # Gamma parameter for the lr scheduler
 SCHEDULER_STEP = 3  # Step size for the lr scheduler
 
@@ -76,7 +77,7 @@ def train(writer=None):
         # Setup model, optimizer and loss
         model = DFFN().to(device)
         criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.SGD(model.parameters(), lr=LEARNING_RATE, momentum=MOMENTUM)
+        optimizer = torch.optim.SGD(model.parameters(), lr=LEARNING_RATE, momentum=MOMENTUM, weight_decay=WEIGHT_DECAY)
 
         # Scheduler
         step_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
