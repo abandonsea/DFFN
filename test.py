@@ -9,28 +9,34 @@ Created on Wed Oct 5 17:57 2021
 
 import torch
 import torch.nn.functional as f
-import torch.utils.data as Torchdata
+from torch.utils.data import DataLoader
 import numpy as np
 from tqdm import tqdm
 
 from tools import *
 from net import *
 
+# Import tensorboard
+from torch.utils.tensorboard import SummaryWriter
+
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Parameters setting
+EXEC_NAME = 'exec_01'  # Name for the train execution (will be used to load all information)
 DATASET = 'PaviaU'  # PaviaU; Salinas; KSC
 FOLDER = './Datasets/'  # the dataset folder
 CHECKPOINT_FOLDER = 'checkpoints/' + DATASET + '/'
 BATCH_SIZE = 20  # Batch size for every test iteration
+SAMPLE_SIZE = 23  # Window size for every sample/pixel input
 
 
 # Test DFFN
-def test(test_loader=None, model=None, batch_size=BATCH_SIZE):
+def test(test_loader=None, model=None, writer=None, batch_size=BATCH_SIZE):
     # Load data if none is provided
     if test_loader is None or model is None:
-        test_loader, model = load_test_environment()
+        test_dataset, model = load_test_environment(name=EXEC_NAME, folder=FOLDER, dataset=DATASET)
+        test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     # Begin testing
     labels_pr = []
@@ -59,10 +65,20 @@ def test(test_loader=None, model=None, batch_size=BATCH_SIZE):
         acc = 100.0 * n_correct / n_samples
         print(f'accuracy = {acc}')
 
+        if writer is not None:
+            # Accuracy per class
+            classes = range(10)
+            for i in classes:
+                labels_i = labels_pr == i
+                prediction_i = prediction_pr[:, i]
+                writer.add_pr_curve(str(i), labels_i, prediction_i, global_step=0)
+
 
 # Main for running test independently
 def main():
+    writer = SummaryWriter('runs/code_test')
     test()
+    writer.close()
 
 
 if __name__ == '__main__':
