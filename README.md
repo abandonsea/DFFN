@@ -14,7 +14,7 @@ Please set your parameters in train.py or test.py before running them.
 
 To train, run:
 ```python
-# Still debugging
+# Trains network multiple times (see parameters in file)
 python train.py
 ``` 
 
