@@ -208,3 +208,9 @@ class HSIDataset(Dataset):
             data = np.rot90(data, 3)
 
         return data
+
+
+# Load necessary test values
+def load_test_environment():
+    # Dummies
+    return 2, 4
