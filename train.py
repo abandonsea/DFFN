@@ -42,7 +42,7 @@ LEARNING_RATE = 0.1  # Initial learning rate
 MOMENTUM = 0.9  # Momentum of optimizer
 WEIGHT_DECAY = 1e-4  # Weight decay for the optimizer
 GAMMA = 0.1  # Gamma parameter for the lr scheduler
-SCHEDULER_STEP = 3  # Step size for the lr scheduler
+SCHEDULER_STEP = 100  # Step size for the lr scheduler
 
 # Other options
 PRINT_FREQUENCY = 50  # The amount of iterations between every step/loss print
@@ -61,6 +61,7 @@ def train(writer=None):
 
         # Generate samples or read existing samples
         if GENERATE_SAMPLE:
+            # TODO: Add the option to also sample a validation set
             train_gt, test_gt = data.split_ground_truth(TRAIN_SPLIT, MAX_SAMPLES_PER_CLASS)
             data.save_samples(train_gt, test_gt, MAX_SAMPLES_PER_CLASS, run)
         else:
@@ -126,6 +127,10 @@ def train(writer=None):
                         writer.add_scalar('accuracy', running_correct / WRITE_FREQUENCY, epoch * total_steps + i)
                         running_loss = 0.0
                         running_correct = 0
+
+            # Write it one last time per epoch
+            tqdm.write(
+                f'\tEpoch [{epoch + 1}/{NUM_EPOCHS}], Step [{total_steps}/{total_steps}]\tLoss: {loss.item():.4f}')
 
         print("Finished training!")
 
