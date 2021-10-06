@@ -16,20 +16,21 @@ from tools import *
 from net import *
 from test import test
 
-# Use tensorboard
+# Import tensorboard
 from torch.utils.tensorboard import SummaryWriter
-writer = SummaryWriter('runs/code_test')
 
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Dataset settings
+# TODO: Implement file organization to keep train data and use it for testing
+EXEC_NAME = 'exec_01'  # Name for the train execution (will be used to save all information)
 DATASET = 'PaviaU'  # PaviaU; KSC; Salinas
 FOLDER = './Datasets/'  # Dataset folder
 TRAIN_SPLIT = 0.8  # Fraction from the dataset used for training
 TRAIN_BATCH_SIZE = 100  # Batch size for every train iteration
 TEST_BATCH_SIZE = 20  # Batch size for every test iteration
-SAMPLE_SIZE = 23  # Hyper parameter: patch size
+SAMPLE_SIZE = 23  # Window size for every sample/pixel input
 SAMPLE_BANDS = 5  # Number of bands after applying PCA
 GENERATE_SAMPLE = True  # Whether the samples should be generated (False to load previously saved samples)
 MAX_SAMPLES_PER_CLASS = None  # max training samples per class (use None for no limit)
@@ -44,11 +45,12 @@ SCHEDULER_STEP = 3  # Step size for the lr scheduler
 
 # Other options
 PRINT_FREQUENCY = 50  # The amount of iterations between every step/loss print
+WRITE_FREQUENCY = 25  # The amount of iterations between every tensorboard update
 TEST_NETWORK = False  # Whether to test network immediately after training a run
 
 
 # Train
-def train():
+def train(writer=None):
     # Load raw dataset, apply PCA and normalize dataset.
     data = HSIData(DATASET, FOLDER, SAMPLE_BANDS)
 
@@ -106,58 +108,34 @@ def train():
                 loss.backward()
                 optimizer.step()
 
-                # Compute intermediate results for visualization
-                running_loss += loss.item()
-                _, predicted = torch.max(outputs.data, 1)
-                running_correct += (predicted == labels).sum().item()
-
                 # Print steps and loss every PRINT_FREQUENCY
                 if (i + 1) % PRINT_FREQUENCY == 0:
-                    tqdm.write(f'\tEpoch [{epoch + 1}/{NUM_EPOCHS}], Step [{i + 1}/{total_steps}]\tLoss: {loss.item():.4f}')
-                    writer.add_scalar('training loss', running_loss / PRINT_FREQUENCY, epoch * total_steps + i)
-                    writer.add_scalar('accuracy', running_correct / PRINT_FREQUENCY, epoch * total_steps + i)
-                    running_loss = 0.0
-                    running_correct = 0
+                    tqdm.write(
+                        f'\tEpoch [{epoch + 1}/{NUM_EPOCHS}], Step [{i + 1}/{total_steps}]\tLoss: {loss.item():.4f}')
+
+                # Compute intermediate results for visualization
+                if writer is not None:
+                    running_loss += loss.item()
+                    _, predicted = torch.max(outputs.data, 1)
+                    running_correct += (predicted == labels).sum().item()
+
+                    # Write steps and loss every WRITE_FREQUENCY to tensorboard
+                    if (i + 1) % WRITE_FREQUENCY == 0:
+                        writer.add_scalar('training loss', running_loss / WRITE_FREQUENCY, epoch * total_steps + i)
+                        writer.add_scalar('accuracy', running_correct / WRITE_FREQUENCY, epoch * total_steps + i)
+                        running_loss = 0.0
+                        running_correct = 0
 
         print("Finished training!")
 
         # Run testing if selected
         if TEST_NETWORK:
-            labels_pr = []
-            prediction_pr = []
-            with torch.no_grad():
-                n_correct = 0
-                n_samples = 0
-                for images, labels in test_loader:
-                    images = images.reshape(-1, 28 * 28).to(device)
-                    labels = labels.to(device)
-                    outputs = model(images)
-
-                    _, predicted = torch.max(outputs, 1)
-                    n_samples += labels.shape[0]
-                    n_correct += (predicted == labels).sum().item()
-
-                    class_predictions = [f.softmax(output, dim=0) for output in outputs]
-
-                    prediction_pr.append(class_predictions)
-                    labels_pr.append(predicted)
-
-                prediction_pr = torch.cat([torch.stack(batch) for batch in prediction_pr])
-                labels_pr = torch.cat(labels_pr)
-
-                acc = 100.0 * n_correct / n_samples
-                print(f'accuracy = {acc}')
-
-                # Accuracy per class
-                classes = range(10)
-                for i in classes:
-                    labels_i = labels_pr == i
-                    prediction_i = prediction_pr[:, i]
-                    writer.add_pr_curve(str(i), labels_i, prediction_i, global_step=0)
+            test(test_loader=test_loader, model=model, writer=writer)
 
 
 # Main function
 def main():
+    writer = SummaryWriter('runs/code_test')
     train()
     writer.close()
 
