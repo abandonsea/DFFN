@@ -25,8 +25,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 EXEC_NAME = 'exec_01'  # Name for the train execution (will be used to save all information)
 DATASET = 'PaviaU'  # PaviaU; KSC; Salinas
 FOLDER = './Datasets/'  # Dataset folder
-VAL_SPLIT = 0.1  # Fraction from the dataset used for validation
-TRAIN_SPLIT = 0.8  # Fraction from the dataset used for training
+VAL_SPLIT = 0.1  # Fraction from the dataset used for validation [0, 1]
+TRAIN_SPLIT = 0.8  # Fraction from the dataset used for training [0, 1]
 TRAIN_BATCH_SIZE = 100  # Batch size for every train iteration
 TEST_BATCH_SIZE = 20  # Batch size for every test iteration
 SAMPLE_SIZE = 23  # Window size for every sample/pixel input
@@ -60,9 +60,9 @@ def train(writer=None):
         # Generate samples or read existing samples
         if GENERATE_SAMPLE:
             train_gt, test_gt, val_gt = data.sample_dataset(TRAIN_SPLIT, VAL_SPLIT, MAX_SAMPLES_PER_CLASS)
-            data.save_samples(train_gt, test_gt, val_gt, MAX_SAMPLES_PER_CLASS, run)
+            data.save_samples(train_gt, test_gt, val_gt, TRAIN_SPLIT, VAL_SPLIT, run)
         else:
-            train_gt, test_gt, val_gt = data.load_samples(MAX_SAMPLES_PER_CLASS, run)
+            train_gt, test_gt, val_gt = data.load_samples(TRAIN_SPLIT, VAL_SPLIT, run)
 
         # Create train and test dataset objects
         train_dataset = HSIDataset(data.image, train_gt, SAMPLE_SIZE, data_augmentation=True)
