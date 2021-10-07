@@ -83,7 +83,7 @@ def test_model(model, loader, writer=None):
 
 # Main for running test independently
 def main():
-    writer = SummaryWriter('runs/code_test')
+    writer = SummaryWriter('tensorboard')
     test()
     writer.close()
 

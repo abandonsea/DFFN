@@ -135,7 +135,7 @@ def train(writer=None):
 
 # Main function
 def main():
-    writer = SummaryWriter('runs/code_test')
+    writer = SummaryWriter('tensorboard')
     train()
     writer.close()
 
