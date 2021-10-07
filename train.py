@@ -93,7 +93,6 @@ def train(writer=None):
             print("RUNNING EPOCH {}/{}".format(epoch + 1, NUM_EPOCHS))
 
             # Run iterations
-            last_loss = 0
             for i, (images, labels) in tqdm(enumerate(train_loader), total=len(train_loader)):
                 # image should have size 23x23x5
                 images = images.to(device)
@@ -110,12 +109,10 @@ def train(writer=None):
                 lr_scheduler.step()
 
                 # Print steps and loss every PRINT_FREQUENCY
-                if (i + 1) % PRINT_FREQUENCY == 0:
+                if (i + 1) % PRINT_FREQUENCY == 0 or i + 1 == total_steps:
                     tqdm.write(
                         f'\tEpoch [{epoch + 1}/{NUM_EPOCHS}], Step [{i + 1}/{total_steps}]\tLoss: {loss.item():.4f}')
-                if i + 1 == total_steps:
-                    last_loss = loss.item()
-
+                
                 # Compute intermediate results for visualization
                 if writer is not None:
                     running_loss += loss.item()
@@ -130,8 +127,7 @@ def train(writer=None):
                         running_correct = 0
 
             # Write it one last time per epoch
-            tqdm.write(
-                f'\tEpoch [{epoch + 1}/{NUM_EPOCHS}], Step [{total_steps}/{total_steps}]\tLoss: {last_loss:.4f}')
+
 
             # Run validation
             if VAL_SPLIT > 0:
