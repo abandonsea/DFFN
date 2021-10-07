@@ -112,7 +112,7 @@ def train(writer=None):
                 if (i + 1) % PRINT_FREQUENCY == 0 or i + 1 == total_steps:
                     tqdm.write(
                         f'\tEpoch [{epoch + 1}/{NUM_EPOCHS}], Step [{i + 1}/{total_steps}]\tLoss: {loss.item():.4f}')
-                
+
                 # Compute intermediate results for visualization
                 if writer is not None:
                     running_loss += loss.item()
@@ -125,9 +125,6 @@ def train(writer=None):
                         writer.add_scalar('accuracy', running_correct / WRITE_FREQUENCY, epoch * total_steps + i)
                         running_loss = 0.0
                         running_correct = 0
-
-            # Write it one last time per epoch
-
 
             # Run validation
             if VAL_SPLIT > 0:
