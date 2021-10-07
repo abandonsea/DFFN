@@ -74,6 +74,7 @@ class HSIData:
 
     @staticmethod
     def apply_dimension_reduction(image, num_bands=5):
+        assert(num_bands < image.shape[2], 'The amount of bands should be smaller than the number image channels')
         image_height, image_width, image_bands = image.shape
         flat_image = np.reshape(image, (image_height * image_width, image_bands))
 
@@ -97,14 +98,10 @@ class HSIData:
         return out_img, pca, sca1, sca2  # Returning transformers for future usage
 
     # Split ground-truth pixels into train, test, val
-    def sample_dataset(self, train_size=0.75, val_size=0, max_train_samples=None):
-        # If train/val_size <= 1, use as a fraction of the dataset.
-        # If train/val_size > 1, use as a percentage value and divide by 100.
-        if train_size > 1:
-            train_size = float(train_size) / 100
-        if val_size > 1:
-            val_size = float(val_size) / 100
-        assert (train_size + val_size < 1)
+    def sample_dataset(self, train_size=0.8, val_size=0.1, max_train_samples=None):
+        assert(train_size >= 1 and train_size > 0, 'Train set size should be a value between 0 and 1')
+        assert(val_size > 1 and val_size >= 0, 'Validation set size should be a value between 0 and 1')
+        assert (train_size + val_size < 1, 'Train and validation sets should not use the whole dataset')
 
         # Get train samples and non-train samples (== test samples, when there is no validation set)
         train_gt, test_gt = self.split_ground_truth(self.ground_truth, train_size, max_train_samples)
@@ -136,28 +133,6 @@ class HSIData:
         set1_gt[set1_indices] = ground_truth[set1_indices]
         set2_gt[set1_indices] = 0
         return set1_gt, set2_gt
-
-    # Load samples from hard drive for every run.
-    def load_samples(self, train_split, val_split, run):
-        train_size = 'train_' + str(int(100 * train_split)) + '_'
-        val_size = 'val_' + str(int(100 * val_split)) + '_'
-        filename = train_size + val_size + 'run_ ' + str(run) + '.mat'
-        sample_file = './dataset_split/' + self.dataset_name + '/' + filename
-        data = io.loadmat(sample_file)
-        train_gt = data['train_gt']
-        test_gt = data['test_gt']
-        val_gt = data['val_gt']
-        return train_gt, test_gt, val_gt
-
-    # Save samples for every run.
-    def save_samples(self, train_gt, test_gt, val_gt, train_split, val_split, run):
-        train_size = 'train_' + str(int(100 * train_split)) + '_'
-        val_size = 'val_' + str(int(100 * val_split)) + '_'
-        sample_dir = './dataset_split/' + self.dataset_name + '/'
-        if not os.path.isdir(sample_dir):
-            os.makedirs(sample_dir)
-        sample_file = sample_dir + train_size + val_size + '_run' + str(run) + '.mat'
-        io.savemat(sample_file, {'train_gt': train_gt, 'test_gt': test_gt, 'val_gt': val_gt})
 
 
 # Dataset class based on PyTorch's
@@ -228,6 +203,30 @@ class HSIDataset(Dataset):
             data = np.rot90(data, 3)
 
         return data
+
+
+# Load samples from hard drive for every run.
+def load_samples(dataset_name, train_split, val_split, run):
+    train_size = 'train_' + str(int(100 * train_split)) + '_'
+    val_size = 'val_' + str(int(100 * val_split)) + '_'
+    filename = train_size + val_size + 'run_ ' + str(run) + '.mat'
+    sample_file = './dataset_split/' + dataset_name + '/' + filename
+    data = io.loadmat(sample_file)
+    train_gt = data['train_gt']
+    test_gt = data['test_gt']
+    val_gt = data['val_gt']
+    return train_gt, test_gt, val_gt
+
+
+# Save samples for every run.
+def save_samples(dataset_name, train_gt, test_gt, val_gt, train_split, val_split, run):
+    train_size = 'train_' + str(int(100 * train_split)) + '_'
+    val_size = 'val_' + str(int(100 * val_split)) + '_'
+    sample_dir = './dataset_split/' + dataset_name + '/'
+    if not os.path.isdir(sample_dir):
+        os.makedirs(sample_dir)
+    sample_file = sample_dir + train_size + val_size + '_run' + str(run) + '.mat'
+    io.savemat(sample_file, {'train_gt': train_gt, 'test_gt': test_gt, 'val_gt': val_gt})
 
 
 # Load necessary test values
