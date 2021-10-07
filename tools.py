@@ -106,7 +106,7 @@ class HSIData:
             val_size = float(val_size) / 100
         assert (train_size + val_size < 1)
 
-        # GEt train samples and non-train samples (== test samples, when there is no validation set)
+        # Get train samples and non-train samples (== test samples, when there is no validation set)
         train_gt, test_gt = self.split_ground_truth(self.ground_truth, train_size, max_train_samples)
 
         val_gt = None
@@ -141,7 +141,8 @@ class HSIData:
     def load_samples(self, train_split, val_split, run):
         train_size = 'train_' + str(int(100 * train_split)) + '_'
         val_size = 'val_' + str(int(100 * val_split)) + '_'
-        sample_file = './dataset_split/' + self.dataset_name + '/' + train_size + val_size + 'run_ ' + str(run) + '.mat'
+        filename = train_size + val_size + 'run_ ' + str(run) + '.mat'
+        sample_file = './dataset_split/' + self.dataset_name + '/' + filename
         data = io.loadmat(sample_file)
         train_gt = data['train_gt']
         test_gt = data['test_gt']
