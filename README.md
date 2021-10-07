@@ -20,7 +20,7 @@ python train.py
 
 To test, run:
 ```python
-# Not yet implemented
+# Not yet fully implemented
 python test.py
 ```
 
