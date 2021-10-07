@@ -60,9 +60,9 @@ def train(writer=None):
         # Generate samples or read existing samples
         if GENERATE_SAMPLE:
             train_gt, test_gt, val_gt = data.sample_dataset(TRAIN_SPLIT, VAL_SPLIT, MAX_SAMPLES_PER_CLASS)
-            data.save_samples(train_gt, test_gt, val_gt, TRAIN_SPLIT, VAL_SPLIT, run)
+            HSIData.save_samples(DATASET, train_gt, test_gt, val_gt, TRAIN_SPLIT, VAL_SPLIT, run)
         else:
-            train_gt, test_gt, val_gt = data.load_samples(TRAIN_SPLIT, VAL_SPLIT, run)
+            train_gt, test_gt, val_gt = HSIData.load_samples(DATASET, TRAIN_SPLIT, VAL_SPLIT, run)
 
         # Create train and test dataset objects
         train_dataset = HSIDataset(data.image, train_gt, SAMPLE_SIZE, data_augmentation=True)

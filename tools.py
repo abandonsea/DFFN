@@ -134,6 +134,37 @@ class HSIData:
         set2_gt[set1_indices] = 0
         return set1_gt, set2_gt
 
+    # Load samples from hard drive for every run.
+    @staticmethod
+    def load_samples(dataset_name, train_split, val_split, run):
+        train_size = 'train_' + str(int(100 * train_split)) + '_'
+        val_size = 'val_' + str(int(100 * val_split)) + '_'
+        filename = train_size + val_size + 'run_ ' + str(run) + '.mat'
+        sample_file = './dataset_split/' + dataset_name + '/' + filename
+        data = io.loadmat(sample_file)
+        train_gt = data['train_gt']
+        test_gt = data['test_gt']
+        val_gt = data['val_gt']
+        return train_gt, test_gt, val_gt
+
+    # Save samples for every run.
+    @staticmethod
+    def save_samples(dataset_name, train_gt, test_gt, val_gt, train_split, val_split, run):
+        train_size = 'train_' + str(int(100 * train_split)) + '_'
+        val_size = 'val_' + str(int(100 * val_split)) + '_'
+        sample_dir = './dataset_split/' + dataset_name + '/'
+        if not os.path.isdir(sample_dir):
+            os.makedirs(sample_dir)
+        sample_file = sample_dir + train_size + val_size + '_run' + str(run) + '.mat'
+        io.savemat(sample_file, {'train_gt': train_gt, 'test_gt': test_gt, 'val_gt': val_gt})
+
+    # Load necessary test values
+    # TODO: Implement this
+    @staticmethod
+    def load_environment(name, folder='./Datasets/', dataset='PaviaU'):
+        # Dummies
+        return 2, 4
+
 
 # Dataset class based on PyTorch's
 class HSIDataset(Dataset):
@@ -203,34 +234,3 @@ class HSIDataset(Dataset):
             data = np.rot90(data, 3)
 
         return data
-
-
-# Load samples from hard drive for every run.
-def load_samples(dataset_name, train_split, val_split, run):
-    train_size = 'train_' + str(int(100 * train_split)) + '_'
-    val_size = 'val_' + str(int(100 * val_split)) + '_'
-    filename = train_size + val_size + 'run_ ' + str(run) + '.mat'
-    sample_file = './dataset_split/' + dataset_name + '/' + filename
-    data = io.loadmat(sample_file)
-    train_gt = data['train_gt']
-    test_gt = data['test_gt']
-    val_gt = data['val_gt']
-    return train_gt, test_gt, val_gt
-
-
-# Save samples for every run.
-def save_samples(dataset_name, train_gt, test_gt, val_gt, train_split, val_split, run):
-    train_size = 'train_' + str(int(100 * train_split)) + '_'
-    val_size = 'val_' + str(int(100 * val_split)) + '_'
-    sample_dir = './dataset_split/' + dataset_name + '/'
-    if not os.path.isdir(sample_dir):
-        os.makedirs(sample_dir)
-    sample_file = sample_dir + train_size + val_size + '_run' + str(run) + '.mat'
-    io.savemat(sample_file, {'train_gt': train_gt, 'test_gt': test_gt, 'val_gt': val_gt})
-
-
-# Load necessary test values
-# TODO: Implement this
-def load_test_environment(name, folder='./Datasets/', dataset='PaviaU'):
-    # Dummies
-    return 2, 4

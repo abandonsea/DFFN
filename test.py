@@ -35,7 +35,7 @@ SAMPLE_SIZE = 23  # Window size for every sample/pixel input
 def test(test_loader=None, model=None, writer=None, batch_size=BATCH_SIZE):
     # Load data if none is provided
     if test_loader is None or model is None:
-        test_dataset, model = load_test_environment(name=EXEC_NAME, folder=FOLDER, dataset=DATASET)
+        test_dataset, model = HSIData.load_environment(name=EXEC_NAME, folder=FOLDER, dataset=DATASET)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
     # TODO: Implement proper way of reading files and performing different tests
 
