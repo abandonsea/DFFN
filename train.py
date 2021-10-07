@@ -22,9 +22,10 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Dataset settings
 # TODO: Implement file organization to store train data and use it for testing
-EXEC_NAME = 'exec_01'  # Name for the train execution (will be used to save all information)
 DATASET = 'PaviaU'  # PaviaU; KSC; Salinas
-FOLDER = './Datasets/'  # Dataset folder
+DATA_FOLDER = './datasets/'  # Dataset folder
+EXEC_NAME = 'exec_01'  # Name for the train execution (will be used to load all information)
+EXEC_FOLDER = './experiments/'  # Folder where to keep all the experiment/execution data
 VAL_SPLIT = 0.1  # Fraction from the dataset used for validation [0, 1]
 TRAIN_SPLIT = 0.8  # Fraction from the dataset used for training [0, 1]
 TRAIN_BATCH_SIZE = 100  # Batch size for every train iteration
@@ -51,7 +52,7 @@ WRITE_FREQUENCY = 25  # The amount of iterations between every tensorboard updat
 # Train
 def train(writer=None):
     # Load raw dataset, apply PCA and normalize dataset.
-    data = HSIData(DATASET, FOLDER, SAMPLE_BANDS)
+    data = HSIData(DATASET, DATA_FOLDER, SAMPLE_BANDS)
 
     # Run training
     for run in range(NUM_RUNS):

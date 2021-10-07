@@ -22,7 +22,7 @@ import os
 class HSIData:
     """Stores dataset raw image and labels and applies pre-processing"""
 
-    def __init__(self, dataset_name, target_folder='./Datasets/', num_bands=5):
+    def __init__(self, dataset_name, target_folder='./datasets/', num_bands=5):
         self.dataset_name = dataset_name
         folder = target_folder + dataset_name + '/'
 

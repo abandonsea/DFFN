@@ -23,9 +23,11 @@ from torch.utils.tensorboard import SummaryWriter
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Parameters setting
-EXEC_NAME = 'exec_01'  # Name for the train execution (will be used to load all information)
+
 DATASET = 'PaviaU'  # PaviaU; Salinas; KSC
-FOLDER = './Datasets/'  # the dataset folder
+DATA_FOLDER = './datasets/'  # the dataset folder
+EXEC_NAME = 'exec_01'  # Name for the train execution (will be used to load all information)
+EXEC_FOLDER = './experiments/'  # Folder where to keep all the experiment/execution data
 CHECKPOINT_FOLDER = 'checkpoints/' + DATASET + '/'
 BATCH_SIZE = 20  # Batch size for every test iteration
 SAMPLE_SIZE = 23  # Window size for every sample/pixel input
@@ -35,7 +37,7 @@ SAMPLE_SIZE = 23  # Window size for every sample/pixel input
 def test(test_loader=None, model=None, writer=None, batch_size=BATCH_SIZE):
     # Load data if none is provided
     if test_loader is None or model is None:
-        test_dataset, model = HSIData.load_environment(name=EXEC_NAME, folder=FOLDER, dataset=DATASET)
+        test_dataset, model = HSIData.load_environment(name=EXEC_NAME, folder=DATA_FOLDER, dataset=DATASET)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
     # TODO: Implement proper way of reading files and performing different tests
 
