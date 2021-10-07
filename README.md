@@ -13,13 +13,13 @@ CPU or GPU
 Please set your parameters in train.py or test.py before running them. 
 
 To train, run:
-```python
+```bash
 # Trains network multiple times (see parameters in file)
 python train.py
 ``` 
 
 To test, run:
-```python
+```bash
 # Not yet fully implemented
 python test.py
 ```
