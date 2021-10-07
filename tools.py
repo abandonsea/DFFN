@@ -138,8 +138,10 @@ class HSIData:
         return set1_gt, set2_gt
 
     # Load samples from hard drive for every run.
-    def load_samples(self, num_samples, run):
-        sample_file = './TrainTestSplit/' + self.dataset_name + '/sample' + str(num_samples) + '_run' + str(run) + '.mat'
+    def load_samples(self, train_split, val_split, run):
+        train_size = 'train_' + str(int(100 * train_split)) + '_'
+        val_size = 'val_' + str(int(100 * val_split)) + '_'
+        sample_file = './dataset_split/' + self.dataset_name + '/' + train_size + val_size + 'run_ ' + str(run) + '.mat'
         data = io.loadmat(sample_file)
         train_gt = data['train_gt']
         test_gt = data['test_gt']
@@ -147,11 +149,13 @@ class HSIData:
         return train_gt, test_gt, val_gt
 
     # Save samples for every run.
-    def save_samples(self, train_gt, test_gt, val_gt, num_samples, run):
-        sample_dir = './TrainTestSplit/' + self.dataset_name + '/'
+    def save_samples(self, train_gt, test_gt, val_gt, train_split, val_split, run):
+        train_size = 'train_' + str(int(100 * train_split)) + '_'
+        val_size = 'val_' + str(int(100 * val_split)) + '_'
+        sample_dir = './dataset_split/' + self.dataset_name + '/'
         if not os.path.isdir(sample_dir):
             os.makedirs(sample_dir)
-        sample_file = sample_dir + 'sample' + str(num_samples) + '_run' + str(run) + '.mat'
+        sample_file = sample_dir + train_size + val_size + '_run' + str(run) + '.mat'
         io.savemat(sample_file, {'train_gt': train_gt, 'test_gt': test_gt, 'val_gt': val_gt})
 
 
