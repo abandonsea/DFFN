@@ -21,7 +21,7 @@ from torch.utils.tensorboard import SummaryWriter
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Dataset settings
-# TODO: Implement file organization to keep train data and use it for testing
+# TODO: Implement file organization to store train data and use it for testing
 EXEC_NAME = 'exec_01'  # Name for the train execution (will be used to save all information)
 DATASET = 'PaviaU'  # PaviaU; KSC; Salinas
 FOLDER = './Datasets/'  # Dataset folder
