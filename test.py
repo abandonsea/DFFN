@@ -34,10 +34,20 @@ def test(writer=None):
     # Load config data from training
     cfg = DFFNConfig(CONFIG_FILE, test=True)
 
+    # Load processed dataset
+    data = torch.load(cfg.exec_folder + 'proc_data.pth')
+
     for run in range(cfg.num_runs):
-        test_dataset, model = HSIData.load_environment(cfg.exec_folder)
+        # Load test ground truth and initialize test loader
+        _, test_gt, _ = HSIData.load_samples(cfg.split_folder, cfg.train_split, cfg.val_split, run)
+        test_dataset = HSIDataset(data, test_gt, cfg.sample_size, data_augmentation=False)
         test_loader = DataLoader(test_dataset, batch_size=cfg.test_batch_size, shuffle=False)
-        # TODO: Implement proper way of reading files and performing different tests
+
+        # Load model
+        model_file = cfg.exec_folder + 'dffn_model_run_' + str(run) + '.pth'
+        model = DFFN()
+        model.load_state_dict(torch.load(model_file))
+        model.eval()
 
         # Test model from the current run
         test_model(model, test_loader, writer)
