@@ -136,12 +136,11 @@ class HSIData:
 
     # Load samples from hard drive for every run.
     @staticmethod
-    def load_samples(dataset_name, train_split, val_split, run):
+    def load_samples(split_folder, train_split, val_split, run):
         train_size = 'train_' + str(int(100 * train_split)) + '_'
         val_size = 'val_' + str(int(100 * val_split)) + '_'
-        filename = train_size + val_size + 'run_ ' + str(run) + '.mat'
-        sample_file = './dataset_split/' + dataset_name + '/' + filename
-        data = io.loadmat(sample_file)
+        file = split_folder + train_size + val_size + 'run_ ' + str(run) + '.mat'
+        data = io.loadmat(file)
         train_gt = data['train_gt']
         test_gt = data['test_gt']
         val_gt = data['val_gt']
@@ -149,19 +148,18 @@ class HSIData:
 
     # Save samples for every run.
     @staticmethod
-    def save_samples(dataset_name, train_gt, test_gt, val_gt, train_split, val_split, run):
+    def save_samples(train_gt, test_gt, val_gt, split_folder, train_split, val_split, run):
         train_size = 'train_' + str(int(100 * train_split)) + '_'
         val_size = 'val_' + str(int(100 * val_split)) + '_'
-        sample_dir = './dataset_split/' + dataset_name + '/'
-        if not os.path.isdir(sample_dir):
-            os.makedirs(sample_dir)
-        sample_file = sample_dir + train_size + val_size + '_run' + str(run) + '.mat'
+        if not os.path.isdir(split_folder):
+            os.makedirs(split_folder)
+        sample_file = split_folder + train_size + val_size + '_run' + str(run) + '.mat'
         io.savemat(sample_file, {'train_gt': train_gt, 'test_gt': test_gt, 'val_gt': val_gt})
 
     # Load necessary test values
     # TODO: Implement this
     @staticmethod
-    def load_environment(name, folder='./Datasets/', dataset='PaviaU'):
+    def load_environment(name, exec_folder='./experiments/', data_folder='./data_split/', dataset='PaviaU'):
         # Dummies
         return 2, 4
 
