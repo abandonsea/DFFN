@@ -129,8 +129,8 @@ def train(writer=None):
                 'loss_state': running_loss,
                 'correct_state': running_correct,
                 'model_state': model.state_dict(),
-                'optim_state': optimizer.state_dict(),
-                'scheduler': lr_scheduler.state_dict()
+                'optimizer_state': optimizer.state_dict(),
+                'scheduler_state': lr_scheduler.state_dict()
             }
             torch.save(checkpoint, 'checkpoint_run_' + str(run) + '_epoch_' + str(epoch) + '.pth')
 
@@ -139,28 +139,6 @@ def train(writer=None):
                 test_model(model, val_loader, writer)
 
         print("Finished training!")
-
-
-# Load a checkpoint
-def load_checkpoint(checkpoint_folder, file):
-    # Check whether to load latest checkpoint
-    filename = checkpoint_folder + str(file)
-    if file is None:
-        file_type = '*.pth'
-        files = glob.glob(checkpoint_folder + file_type)
-        filename = max(files, key=os.path.getctime)
-
-    # Load checkpoint and initialize variables
-    loaded_checkpoint = torch.load(filename)
-    first_run = loaded_checkpoint['run']
-    first_epoch = loaded_checkpoint['epoch'] + 1
-    loss_state = loaded_checkpoint['loss_state']
-    correct_state = loaded_checkpoint['correct_state']
-    values_state = (first_run, first_epoch, loss_state, correct_state)
-    model_state = loaded_checkpoint['model_state']
-    optimizer_state = loaded_checkpoint['optimizer_state']
-    scheduler_state = loaded_checkpoint['scheduler_state']
-    return model_state, optimizer_state, scheduler_state, values_state
 
 
 # Main function

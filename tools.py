@@ -158,3 +158,29 @@ class HSIData:
             os.makedirs(split_folder)
         sample_file = split_folder + train_size + val_size + 'run_' + str(run) + '.mat'
         io.savemat(sample_file, {'train_gt': train_gt, 'test_gt': test_gt, 'val_gt': val_gt})
+
+
+# Load a checkpoint
+def load_checkpoint(checkpoint_folder, file):
+    # Check whether to load latest checkpoint
+    filename = checkpoint_folder + str(file)
+    if file is None:
+        file_type = '*.pth'
+        files = glob.glob(checkpoint_folder + file_type)
+        filename = max(files, key=os.path.getctime)
+
+    # Load checkpoint
+    loaded_checkpoint = torch.load(filename)
+
+    # Load variable states
+    first_run = loaded_checkpoint['run']
+    first_epoch = loaded_checkpoint['epoch'] + 1
+    loss_state = loaded_checkpoint['loss_state']
+    correct_state = loaded_checkpoint['correct_state']
+    values_state = (first_run, first_epoch, loss_state, correct_state)
+
+    # Load dictionary states
+    model_state = loaded_checkpoint['model_state']
+    optimizer_state = loaded_checkpoint['optimizer_state']
+    scheduler_state = loaded_checkpoint['scheduler_state']
+    return model_state, optimizer_state, scheduler_state, values_state
