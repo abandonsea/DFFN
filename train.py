@@ -62,8 +62,6 @@ def train(writer=None):
         train_loader = DataLoader(train_dataset, batch_size=cfg.train_batch_size, shuffle=True, num_workers=4)
         val_loader = DataLoader(val_dataset, batch_size=cfg.test_batch_size, shuffle=False)
 
-        # TODO: Load variable states when loading a checkpoint
-
         # Setup model, optimizer, loss and scheduler
         model = DFFN()
         criterion = nn.CrossEntropyLoss()
