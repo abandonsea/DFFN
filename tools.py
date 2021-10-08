@@ -13,7 +13,6 @@ import numpy as np
 from scipy import io
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-from sklearn.utils import shuffle
 import random
 import os
 
@@ -134,6 +133,10 @@ class HSIData:
         set2_gt[set1_indices] = 0
         return set1_gt, set2_gt
 
+    # Save information needed for testing
+    def save_data(self, exec_folder):
+        torch.save(self.image, exec_folder + 'proc_data.pth')
+
     # Load samples from hard drive for every run.
     @staticmethod
     def load_samples(split_folder, train_split, val_split, run):
@@ -156,13 +159,6 @@ class HSIData:
         sample_file = split_folder + train_size + val_size + 'run_' + str(run) + '.mat'
         io.savemat(sample_file, {'train_gt': train_gt, 'test_gt': test_gt, 'val_gt': val_gt})
 
-    # Load necessary test values
-    # TODO: Implement this
-    @staticmethod
-    def load_environment(name, exec_folder='./experiments/', data_folder='./data_split/', dataset='PaviaU'):
-        # Dummies
-        return 2, 4
-
 
 # Dataset class based on PyTorch's
 class HSIDataset(Dataset):
@@ -179,13 +175,13 @@ class HSIDataset(Dataset):
         self.label = np.pad(gt, pad_size, mode='constant')
 
         # Get indices to data based on ground-truth
-        indices = []
+        self.indices = []
         for c in np.unique(self.label):
             if c == 0:
                 continue
             class_indices = np.nonzero(self.label == c)
             index_tuples = list(zip(*class_indices))
-            indices += index_tuples
+            self.indices += index_tuples
 
     def __len__(self):
         return len(self.indices)
