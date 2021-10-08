@@ -18,9 +18,9 @@ class DFFNConfig:
             # Dataset settings
             self.dataset = cfg['dataset']
             self.experiment = cfg['experiment']
-            self.data_folder = cfg['data_folder'] + self.dataset
+            self.data_folder = cfg['data_folder']
             self.exec_folder = cfg['exec_folder'] + self.experiment + '/'
-            self.split_folder = self.exec_folder + cfg['split_folder']
+            self.split_folder = self.exec_folder + cfg['split_folder'] + self.dataset + '/'
             self.checkpoint_folder = self. exec_folder + cfg['checkpoint_folder'] + self.dataset + '/'
             self.val_split = cfg['val_split']
             self.train_split = cfg['train_split']
