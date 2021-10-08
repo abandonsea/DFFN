@@ -24,6 +24,8 @@ class DFFNConfig:
             self.exec_folder = cfg['exec_folder'] + self.experiment + '/'
             self.split_folder = self.exec_folder + cfg['split_folder'] + self.dataset + '/'
             self.checkpoint_folder = self. exec_folder + cfg['checkpoint_folder'] + self.dataset + '/'
+            self.checkpoint_file = cfg['checkpoint_file']
+            self.use_checkpoint = cfg['use_checkpoint']
             self.val_split = cfg['val_split']
             self.train_split = cfg['train_split']
             self.train_batch_size = cfg['train_batch_size']
@@ -49,7 +51,7 @@ class DFFNConfig:
             self.write_frequency = cfg['write_frequency']
 
         # Copy config to execution folder
-        if not test:
+        if not test and not self.use_checkpoint:
             assert not os.path.isdir(self.exec_folder), 'Current experiment name already exists. '\
                                                         'Please provide a new experiment name.'
             os.makedirs(self.exec_folder)
