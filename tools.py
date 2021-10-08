@@ -74,7 +74,7 @@ class HSIData:
 
     @staticmethod
     def apply_dimension_reduction(image, num_bands=5):
-        assert(num_bands < image.shape[2], 'The amount of bands should be smaller than the number image channels')
+        assert num_bands < image.shape[2], 'The amount of bands should be smaller than the number image channels'
         image_height, image_width, image_bands = image.shape
         flat_image = np.reshape(image, (image_height * image_width, image_bands))
 
@@ -99,9 +99,9 @@ class HSIData:
 
     # Split ground-truth pixels into train, test, val
     def sample_dataset(self, train_size=0.8, val_size=0.1, max_train_samples=None):
-        assert(train_size >= 1 and train_size > 0, 'Train set size should be a value between 0 and 1')
-        assert(val_size > 1 and val_size >= 0, 'Validation set size should be a value between 0 and 1')
-        assert (train_size + val_size < 1, 'Train and validation sets should not use the whole dataset')
+        assert 1 >= train_size > 0, 'Train set size should be a value between 0 and 1'
+        assert 1 > val_size >= 0, 'Validation set size should be a value between 0 and 1'
+        assert train_size + val_size < 1, 'Train and validation sets should not use the whole dataset'
 
         # Get train samples and non-train samples (== test samples, when there is no validation set)
         train_gt, test_gt = self.split_ground_truth(self.ground_truth, train_size, max_train_samples)
