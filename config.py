@@ -6,11 +6,12 @@ Created on Wed Oct 07 19:02 2021
 @author: Pedro Vieira @description: Settings for the DFFN training and testing
 """
 
+import os
 import yaml
 
 
 class DFFNConfig:
-    def __init__(self, file='./config'):
+    def __init__(self, file='config.yaml'):
         # Load config
         with open(file, "r") as file:
             cfg = yaml.safe_load(file)
@@ -45,3 +46,7 @@ class DFFNConfig:
             # Other options
             self.print_frequency = cfg['print_frequency']
             self.write_frequency = cfg['write_frequency']
+
+        # Copy config to execution folder
+        command = 'cp ' + file + ' ' + self.exec_folder + file
+        os.popen(command)
