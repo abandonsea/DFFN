@@ -25,7 +25,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Train
 def train(writer=None):
-    cfg = DFFNConfig('./config.yaml')
+    cfg = DFFNConfig('config.yaml')
     # Load raw dataset, apply PCA and normalize dataset.
     data = HSIData(cfg.dataset, cfg.data_folder, cfg.sample_bands)
 
@@ -34,7 +34,6 @@ def train(writer=None):
         print("Running an experiment with run {}/{}".format(run + 1, cfg.num_runs))
 
         # Generate samples or read existing samples
-
         if cfg.generate_samples:
             train_gt, test_gt, val_gt = data.sample_dataset(cfg.train_split, cfg.val_split, cfg.max_samples)
             HSIData.save_samples(train_gt, test_gt, val_gt, cfg.split_folder, cfg.val_split, cfg.val_split, run)
@@ -65,8 +64,6 @@ def train(writer=None):
         running_correct = 0
         total_steps = len(train_loader)
         test_size = len(test_loader)
-        print('Train size: ', total_steps)
-        print('Test size: ', test_size)
         for epoch in range(cfg.num_epochs):
             print("RUNNING EPOCH {}/{}".format(epoch + 1, cfg.num_epochs))
 
