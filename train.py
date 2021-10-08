@@ -12,6 +12,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from config import DFFNConfig
+from hsi_dataset import HSIDataset
 from tools import *
 from net import *
 from test import test_model
@@ -28,14 +29,25 @@ def train(writer=None):
     cfg = DFFNConfig('config.yaml')
     # Load raw dataset, apply PCA and normalize dataset.
     data = HSIData(cfg.dataset, cfg.data_folder, cfg.sample_bands)
-    # Save data for tests
-    data.save_data(cfg.exec_folder)
+
+    # Load a checkpoint
+    if cfg.use_checkpoint:
+        model_state, optimizer_state, scheduler_state, value_states = load_checkpoint(cfg.checkpoint_folder,
+                                                                                      cfg.checkpoint_file)
+        first_run, first_epoch, loss_state, correct_state = value_states
+    else:
+        first_run, first_epoch, loss_state, correct_state = (0, 0, 0.0, 0)
+        model_state, optimizer_state, scheduler_state = None, None, None
+
+        # Save data for tests if we are not loading a checkpoint
+        data.save_data(cfg.exec_folder)
 
     # Run training
-    for run in range(cfg.num_runs):
+    for run in range(first_run, cfg.num_runs):
         print("Running an experiment with run {}/{}".format(run + 1, cfg.num_runs))
 
         # Generate samples or read existing samples
+        # TODO: Deal with loading data when loading checkpoints
         if cfg.generate_samples:
             train_gt, test_gt, val_gt = data.sample_dataset(cfg.train_split, cfg.val_split, cfg.max_samples)
             HSIData.save_samples(train_gt, test_gt, val_gt, cfg.split_folder, cfg.train_split, cfg.val_split, run)
@@ -50,20 +62,31 @@ def train(writer=None):
         train_loader = DataLoader(train_dataset, batch_size=cfg.train_batch_size, shuffle=True, num_workers=4)
         val_loader = DataLoader(val_dataset, batch_size=cfg.test_batch_size, shuffle=False)
 
-        # Setup model, optimizer and loss
-        model = DFFN().to(device)
+        # TODO: Load variable states when loading a checkpoint
+
+        # Setup model, optimizer, loss and scheduler
+        model = DFFN()
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(model.parameters(), lr=cfg.learning_rate, momentum=cfg.momentum,
                                     weight_decay=cfg.weight_decay)
-
-        # Scheduler
         lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=cfg.scheduler_step, gamma=cfg.gamma)
 
-        # Run epochs
+        # Start counting loss and correct predictions
         running_loss = 0.0
         running_correct = 0
+
+        # Load variable states when loading a checkpoint
+        if cfg.use_checkpoint:
+            model.load_state_dict(model_state)
+            optimizer.load_state_dict(optimizer_state)
+            lr_scheduler.load_state_dict(scheduler_state)
+            running_loss = loss_state
+            running_correct = correct_state
+
+        # Run epochs
+        model = model.to(device)
         total_steps = len(train_loader)
-        for epoch in range(cfg.num_epochs):
+        for epoch in range(first_epoch, cfg.num_epochs):
             print("RUNNING EPOCH {}/{}".format(epoch + 1, cfg.num_epochs))
 
             # Run iterations
@@ -101,11 +124,15 @@ def train(writer=None):
                         running_correct = 0
 
             # Save checkpoint
+            first_epoch = 0
             checkpoint = {
                 'run': run,
                 'epoch': epoch,
+                'loss_state': running_loss,
+                'correct_state': running_correct,
                 'model_state': model.state_dict(),
-                'optim_state': optimizer.state_dict()
+                'optim_state': optimizer.state_dict(),
+                'scheduler': lr_scheduler.state_dict()
             }
             torch.save(checkpoint, 'checkpoint_run_' + str(run) + '_epoch_' + str(epoch) + '.pth')
 
@@ -114,6 +141,28 @@ def train(writer=None):
                 test_model(model, val_loader, writer)
 
         print("Finished training!")
+
+
+# Load a checkpoint
+def load_checkpoint(checkpoint_folder, file):
+    # Check whether to load latest checkpoint
+    filename = checkpoint_folder + str(file)
+    if file is None:
+        file_type = '*.pth'
+        files = glob.glob(checkpoint_folder + file_type)
+        filename = max(files, key=os.path.getctime)
+
+    # Load checkpoint and initialize variables
+    loaded_checkpoint = torch.load(filename)
+    first_run = loaded_checkpoint['run']
+    first_epoch = loaded_checkpoint['epoch'] + 1
+    loss_state = loaded_checkpoint['loss_state']
+    correct_state = loaded_checkpoint['correct_state']
+    values_state = (first_run, first_epoch, loss_state, correct_state)
+    model_state = loaded_checkpoint['model_state']
+    optimizer_state = loaded_checkpoint['optimizer_state']
+    scheduler_state = loaded_checkpoint['scheduler_state']
+    return model_state, optimizer_state, scheduler_state, values_state
 
 
 # Main function
