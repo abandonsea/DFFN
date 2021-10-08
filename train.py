@@ -28,6 +28,8 @@ def train(writer=None):
     cfg = DFFNConfig('config.yaml')
     # Load raw dataset, apply PCA and normalize dataset.
     data = HSIData(cfg.dataset, cfg.data_folder, cfg.sample_bands)
+    # Save data for tests
+    data.save_data(cfg.exec_folder)
 
     # Run training
     for run in range(cfg.num_runs):
@@ -36,18 +38,16 @@ def train(writer=None):
         # Generate samples or read existing samples
         if cfg.generate_samples:
             train_gt, test_gt, val_gt = data.sample_dataset(cfg.train_split, cfg.val_split, cfg.max_samples)
-            HSIData.save_samples(train_gt, test_gt, val_gt, cfg.split_folder, cfg.val_split, cfg.val_split, run)
+            HSIData.save_samples(train_gt, test_gt, val_gt, cfg.split_folder, cfg.train_split, cfg.val_split, run)
         else:
-            train_gt, test_gt, val_gt = HSIData.load_samples(cfg.split_folder, cfg.val_split, cfg.val_split, run)
+            train_gt, _, val_gt = HSIData.load_samples(cfg.split_folder, cfg.train_split, cfg.val_split, run)
 
         # Create train and test dataset objects
         train_dataset = HSIDataset(data.image, train_gt, cfg.sample_size, data_augmentation=True)
-        test_dataset = HSIDataset(data.image, test_gt, cfg.sample_size, data_augmentation=False)
         val_dataset = HSIDataset(data.image, val_gt, cfg.sample_size, data_augmentation=False)
 
         # Create train and test loaders
         train_loader = DataLoader(train_dataset, batch_size=cfg.train_batch_size, shuffle=True, num_workers=4)
-        test_loader = DataLoader(test_dataset, batch_size=cfg.test_batch_size, shuffle=False)
         val_loader = DataLoader(val_dataset, batch_size=cfg.test_batch_size, shuffle=False)
 
         # Setup model, optimizer and loss
@@ -63,7 +63,6 @@ def train(writer=None):
         running_loss = 0.0
         running_correct = 0
         total_steps = len(train_loader)
-        test_size = len(test_loader)
         for epoch in range(cfg.num_epochs):
             print("RUNNING EPOCH {}/{}".format(epoch + 1, cfg.num_epochs))
 
@@ -100,6 +99,15 @@ def train(writer=None):
                         writer.add_scalar('accuracy', running_correct / cfg.write_frequency, epoch * total_steps + i)
                         running_loss = 0.0
                         running_correct = 0
+
+            # Save checkpoint
+            checkpoint = {
+                'run': run,
+                'epoch': epoch,
+                'model_state': model.state_dict(),
+                'optim_state': optimizer.state_dict()
+            }
+            torch.save(checkpoint, 'checkpoint_run_' + str(run) + '_epoch_' + str(epoch) + '.pth')
 
             # Run validation
             if cfg.val_split > 0:
