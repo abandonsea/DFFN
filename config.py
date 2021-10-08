@@ -6,14 +6,15 @@ Created on Wed Oct 07 19:02 2021
 @author: Pedro Vieira @description: Settings for the DFFN training and testing
 """
 
+import shutil
 import os
 import yaml
 
 
 class DFFNConfig:
-    def __init__(self, file='config.yaml'):
+    def __init__(self, filename='config.yaml', test=False):
         # Load config
-        with open(file, "r") as file:
+        with open(filename, "r") as file:
             cfg = yaml.safe_load(file)
 
             # Dataset settings
@@ -48,5 +49,8 @@ class DFFNConfig:
             self.write_frequency = cfg['write_frequency']
 
         # Copy config to execution folder
-        command = 'cp ' + file + ' ' + self.exec_folder + file
-        os.popen(command)
+        if not test:
+            assert not os.path.isdir(self.exec_folder), 'Current experiment name already exists. '\
+                                                        'Please provide a new experiment name.'
+            os.makedirs(self.exec_folder)
+            shutil.copyfile(filename, self.exec_folder + filename)
