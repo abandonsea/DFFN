@@ -33,9 +33,7 @@ class DFFNConfig:
             self.sample_size = cfg['sample_size']
             self.sample_bands = cfg['sample_bands']
             self.generate_samples = cfg['generate_samples']
-            max_samples = cfg['max_samples']
-            if max_samples == 'None':
-                self.max_samples = None
+            self.max_samples = cfg['max_samples']
 
             # Hyper parameters
             self.num_runs = cfg['num_runs']
@@ -51,7 +49,7 @@ class DFFNConfig:
             self.write_frequency = cfg['write_frequency']
 
         # Copy config to execution folder
-        if not test and not self.use_checkpoint:
+        if not (test or self.use_checkpoint):
             assert not os.path.isdir(self.exec_folder), 'Current experiment name already exists. '\
                                                         'Please provide a new experiment name.'
             os.makedirs(self.exec_folder)
