@@ -20,7 +20,7 @@ python train.py
 
 To test, run:
 ```bash
-# Not yet fully implemented
+# Tests all runs saved in a given directory
 python test.py
 ```
 
