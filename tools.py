@@ -187,9 +187,6 @@ class HSIDataset(Dataset):
             index_tuples = list(zip(*class_indices))
             indices += index_tuples
 
-        # Shuffle indices to break label order
-        self.indices = shuffle(indices, random_state=0)
-
     def __len__(self):
         return len(self.indices)
 
