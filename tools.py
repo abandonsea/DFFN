@@ -154,8 +154,6 @@ class HSIData:
     def save_samples(train_gt, test_gt, val_gt, split_folder, train_split, val_split, run):
         train_size = 'train_' + str(int(100 * train_split)) + '_'
         val_size = 'val_' + str(int(100 * val_split)) + '_'
-        if not os.path.isdir(split_folder):
-            os.makedirs(split_folder)
         sample_file = split_folder + train_size + val_size + 'run_' + str(run) + '.mat'
         io.savemat(sample_file, {'train_gt': train_gt, 'test_gt': test_gt, 'val_gt': val_gt})
 
