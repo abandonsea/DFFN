@@ -143,7 +143,7 @@ class HSIData:
     def load_samples(split_folder, train_split, val_split, run):
         train_size = 'train_' + str(int(100 * train_split)) + '_'
         val_size = 'val_' + str(int(100 * val_split)) + '_'
-        file = split_folder + train_size + val_size + 'run_ ' + str(run) + '.mat'
+        file = split_folder + train_size + val_size + 'run_' + str(run) + '.mat'
         data = io.loadmat(file)
         train_gt = data['train_gt']
         test_gt = data['test_gt']
