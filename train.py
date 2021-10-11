@@ -33,12 +33,14 @@ def train(writer=None):
 
     # Load a checkpoint
     if cfg.use_checkpoint:
+        print('Loading checkpoint')
         model_state, optimizer_state, scheduler_state, value_states = load_checkpoint(cfg.checkpoint_folder,
                                                                                       cfg.checkpoint_file)
         first_run, first_epoch, loss_state, correct_state = value_states
         if first_epoch == cfg.num_epochs - 1:
             first_epoch = 0
             first_run += 1
+        print(f'Loaded checkpoint with run {first_run} and epoch {first_epoch}')
     else:
         first_run, first_epoch, loss_state, correct_state = (0, 0, 0.0, 0)
         model_state, optimizer_state, scheduler_state = None, None, None
