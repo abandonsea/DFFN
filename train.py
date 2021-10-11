@@ -108,7 +108,7 @@ def train(writer=None):
                 lr_scheduler.step()
 
                 # Print steps and loss every PRINT_FREQUENCY
-                if (i + 1) % cfg.print_frequency == 0 or i + 1 == total_steps:
+                if (i + 1) % cfg.print_frequency == 0:
                     tqdm.write(
                         f'\tEpoch [{epoch + 1}/{cfg.num_epochs}], Step [{i + 1}/{total_steps}]\tLoss: {loss.item():.4f}')
 
@@ -135,9 +135,11 @@ def train(writer=None):
                 'optimizer_state': optimizer.state_dict(),
                 'scheduler_state': lr_scheduler.state_dict()
             }
-            torch.save(checkpoint, 'checkpoint_run_' + str(run) + '_epoch_' + str(epoch) + '.pth')
+            torch.save(checkpoint,
+                       cfg.checkpoint_folder + 'checkpoint_run_' + str(run) + '_epoch_' + str(epoch) + '.pth')
 
             # Run validation
+            print("STARTING VALIDATION {}/{}".format(epoch + 1, cfg.num_epochs))
             if cfg.val_split > 0:
                 test_model(model, val_loader, writer)
 
