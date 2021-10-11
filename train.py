@@ -47,8 +47,9 @@ def train(writer=None):
         data.save_data(cfg.exec_folder)
 
     # Run training
+    print(f'Starting experiment with {cfg.num_runs} run' + ('s' if cfg.num_runs > 1 else ''))
     for run in range(first_run, cfg.num_runs):
-        print(f'Running an experiment with run {run + 1}/{cfg.num_runs}')
+        print(f'STARTING RUN {run + 1}/{cfg.num_runs}')
 
         # Generate samples or read existing samples
         if cfg.generate_samples and first_epoch == 0:
@@ -88,7 +89,7 @@ def train(writer=None):
         model = model.to(device)
         total_steps = len(train_loader)
         for epoch in range(first_epoch, cfg.num_epochs):
-            print("RUNNING EPOCH {}/{}".format(epoch + 1, cfg.num_epochs))
+            print("STARTING EPOCH {}/{}".format(epoch + 1, cfg.num_epochs))
 
             # Run iterations
             for i, (images, labels) in tqdm(enumerate(train_loader), total=len(train_loader)):
