@@ -13,11 +13,11 @@ import numpy as np
 
 
 # Dataset class based on PyTorch's
-class HSIDataset(Dataset):
+class DFFNDataset(Dataset):
     """Dataset class based on PyTorch's"""
 
     def __init__(self, data, gt, sample_size=23, data_augmentation=True):
-        super(HSIDataset, self).__init__()
+        super(DFFNDataset, self).__init__()
         self.sample_size = sample_size
         self.data_augmentation = data_augmentation
 

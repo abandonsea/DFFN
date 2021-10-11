@@ -14,8 +14,9 @@ import numpy as np
 from tqdm import tqdm
 
 from config import DFFNConfig
+from dffn_dataset import DFFNDataset
 from tools import *
-from net import *
+from net import DFFN
 
 # Import tensorboard
 from torch.utils.tensorboard import SummaryWriter
@@ -40,7 +41,7 @@ def test(writer=None):
     for run in range(cfg.num_runs):
         # Load test ground truth and initialize test loader
         _, test_gt, _ = HSIData.load_samples(cfg.split_folder, cfg.train_split, cfg.val_split, run)
-        test_dataset = HSIDataset(data, test_gt, cfg.sample_size, data_augmentation=False)
+        test_dataset = DFFNDataset(data, test_gt, cfg.sample_size, data_augmentation=False)
         test_loader = DataLoader(test_dataset, batch_size=cfg.test_batch_size, shuffle=False)
 
         # Load model
@@ -79,7 +80,7 @@ def test_model(model, loader, writer=None):
         labels_pr = torch.cat(labels_pr)
 
         acc = 100.0 * n_correct / n_samples
-        print(f'accuracy = {acc}')
+        print(f'Accuracy = {acc}')
 
         # TODO: Also add measures like OA, AA and kappa
         if writer is not None:

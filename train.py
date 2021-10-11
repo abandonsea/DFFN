@@ -8,13 +8,14 @@ https://github.com/weiweisong415/Demo_DFFN_for_TGRS2018
 """
 
 import torch
+import torch.nn as nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from config import DFFNConfig
-from hsi_dataset import HSIDataset
+from dffn_dataset import DFFNDataset
 from tools import *
-from net import *
+from net import DFFN
 from test import test_model
 
 # Import tensorboard
@@ -57,8 +58,8 @@ def train(writer=None):
             train_gt, _, val_gt = HSIData.load_samples(cfg.split_folder, cfg.train_split, cfg.val_split, run)
 
         # Create train and test dataset objects
-        train_dataset = HSIDataset(data.image, train_gt, cfg.sample_size, data_augmentation=True)
-        val_dataset = HSIDataset(data.image, val_gt, cfg.sample_size, data_augmentation=False)
+        train_dataset = DFFNDataset(data.image, train_gt, cfg.sample_size, data_augmentation=True)
+        val_dataset = DFFNDataset(data.image, val_gt, cfg.sample_size, data_augmentation=False)
 
         # Create train and test loaders
         train_loader = DataLoader(train_dataset, batch_size=cfg.train_batch_size, shuffle=True, num_workers=4)
