@@ -35,6 +35,9 @@ def train(writer=None):
         model_state, optimizer_state, scheduler_state, value_states = load_checkpoint(cfg.checkpoint_folder,
                                                                                       cfg.checkpoint_file)
         first_run, first_epoch, loss_state, correct_state = value_states
+        if first_epoch == cfg.num_epochs - 1:
+            first_epoch = 0
+            first_run += 1
     else:
         first_run, first_epoch, loss_state, correct_state = (0, 0, 0.0, 0)
         model_state, optimizer_state, scheduler_state = None, None, None
@@ -44,11 +47,10 @@ def train(writer=None):
 
     # Run training
     for run in range(first_run, cfg.num_runs):
-        print("Running an experiment with run {}/{}".format(run + 1, cfg.num_runs))
+        print(f'Running an experiment with run {run + 1}/{cfg.num_runs}')
 
         # Generate samples or read existing samples
-        # TODO: Deal with loading data when loading checkpoints
-        if cfg.generate_samples:
+        if cfg.generate_samples and first_epoch == 0:
             train_gt, test_gt, val_gt = data.sample_dataset(cfg.train_split, cfg.val_split, cfg.max_samples)
             HSIData.save_samples(train_gt, test_gt, val_gt, cfg.split_folder, cfg.train_split, cfg.val_split, run)
         else:
@@ -122,7 +124,6 @@ def train(writer=None):
                         running_correct = 0
 
             # Save checkpoint
-            first_epoch = 0
             checkpoint = {
                 'run': run,
                 'epoch': epoch,
@@ -138,7 +139,8 @@ def train(writer=None):
             if cfg.val_split > 0:
                 test_model(model, val_loader, writer)
 
-        print("Finished training!")
+        first_epoch = 0
+        print(f'Finished training run {run + 1}')
 
 
 # Main function
