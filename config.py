@@ -49,8 +49,10 @@ class DFFNConfig:
             self.write_frequency = cfg['write_frequency']
 
         # Copy config to execution folder
-        if not (test or self.use_checkpoint or self.generate_samples):
+        if not (test or self.use_checkpoint or not self.generate_samples):
             assert not os.path.isdir(self.exec_folder), 'Current experiment name already exists. '\
                                                         'Please provide a new experiment name.'
             os.makedirs(self.exec_folder)
+            os.makedirs(self.split_folder)
+            os.makedirs(self.checkpoint_folder)
             shutil.copyfile(filename, self.exec_folder + filename)
