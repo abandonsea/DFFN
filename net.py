@@ -139,18 +139,3 @@ class DFFN(nn.Module):
         out = self.fc1(out)
         # Softmax is done together with the Cross Entropy loss
         return out
-
-
-# Initiate weights of net
-def weights_init(m):
-    classname = m.__class__.__name__
-    if classname.find('Conv') != -1:
-        n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-        m.weight.data.normal_(0, 0.05)
-        if m.bias is not None:
-            m.bias.data.zero_()
-    elif classname.find('Linear') != -1:
-        m.weight.data.normal_(0, 0.01)
-        m.bias.data = torch.ones(m.bias.data.size())
-    else:
-        pass
