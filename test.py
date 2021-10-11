@@ -80,7 +80,7 @@ def test_model(model, loader, writer=None):
         labels_pr = torch.cat(labels_pr)
 
         acc = 100.0 * n_correct / n_samples
-        print(f'Accuracy = {acc}')
+        print(f'- Accuracy = {acc}')
 
         # TODO: Also add measures like OA, AA and kappa
         if writer is not None:
