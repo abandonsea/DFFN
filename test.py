@@ -28,12 +28,13 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 ########################
 # SET TEST CONFIG FILE #
 ########################
-CONFIG_FILE = './experiments/exec_01/config.yaml'
+CONFIG_FILE = ''  # Empty string to load default 'config.yaml'
 
 
 # Test DFFN runs
 def test(writer=None):
     # Load config data from training
+    config_file = 'config.yaml' if not CONFIG_FILE else CONFIG_FILE
     cfg = DFFNConfig(CONFIG_FILE, test=True)
 
     # Load processed dataset
