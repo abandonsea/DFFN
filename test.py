@@ -35,12 +35,14 @@ CONFIG_FILE = ''  # Empty string to load default 'config.yaml'
 def test(writer=None):
     # Load config data from training
     config_file = 'config.yaml' if not CONFIG_FILE else CONFIG_FILE
-    cfg = DFFNConfig(CONFIG_FILE, test=True)
+    cfg = DFFNConfig(config_file, test=True)
 
     # Load processed dataset
     data = torch.load(cfg.exec_folder + 'proc_data.pth')
 
     for run in range(cfg.num_runs):
+        print(f'TESTING RUN {run + 1}/{cfg.num_runs}')
+
         # Load test ground truth and initialize test loader
         _, test_gt, _ = HSIData.load_samples(cfg.split_folder, cfg.train_split, cfg.val_split, run)
         test_dataset = DFFNDataset(data, test_gt, cfg.sample_size, data_augmentation=False)
@@ -63,7 +65,8 @@ def test_model(model, loader, writer=None):
     with torch.no_grad():
         n_correct = 0
         n_samples = 0
-        for images, labels in loader:
+        for i, (images, labels) in tqdm(enumerate(loader), total=len(loader)):
+            # for images, labels in loader:
             # Get input and compute model output
             images = images.to(device)
             labels = labels.to(device)
@@ -82,11 +85,11 @@ def test_model(model, loader, writer=None):
         labels_pr = torch.cat(labels_pr)
 
         acc = 100.0 * n_correct / n_samples
-        print(f'- Accuracy = {acc}')
+        print(f'- Accuracy = {acc} %')
 
         # TODO: Also add measures like OA, AA and kappa
         # Test it!
-        get_report(prediction_pr, labels)
+        # get_report(prediction_pr, labels)
 
         if writer is not None:
             # Accuracy per class
