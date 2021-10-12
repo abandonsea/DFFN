@@ -10,6 +10,7 @@ Created on Wed Oct 5 17:57 2021
 import torch
 import torch.nn.functional as f
 from torch.utils.data import DataLoader
+from sklearn import metrics
 import numpy as np
 from tqdm import tqdm
 
@@ -83,6 +84,9 @@ def test_model(model, loader, writer=None):
         print(f'- Accuracy = {acc}')
 
         # TODO: Also add measures like OA, AA and kappa
+        # Test it!
+        get_report(prediction_pr, labels)
+
         if writer is not None:
             # Accuracy per class
             classes = range(10)
@@ -90,6 +94,36 @@ def test_model(model, loader, writer=None):
                 labels_i = labels_pr == i
                 prediction_i = prediction_pr[:, i]
                 writer.add_pr_curve(str(i), labels_i, prediction_i, global_step=0)
+
+
+# Compute kappa coefficient
+def kappa(confusion_matrix, k):
+    data_mat = np.mat(confusion_matrix)
+    P0 = 0.0
+    for i in range(k):
+        P0 += data_mat[i, i] * 1.0
+    xsum = np.sum(data_mat, axis=1)
+    ysum = np.sum(data_mat, axis=0)
+    Pe = float(ysum * xsum) / np.sum(data_mat)**2
+    OA = float(P0 / np.sum(data_mat) * 1.0)
+    cohens_coefficient = float((OA - Pe) / (1 - Pe))
+    return cohens_coefficient
+
+
+# Compute OA, AA and kappa from the results
+def get_report(y_pred, y_gt):
+    classify_report = metrics.classification_report(y_gt, y_pred)
+    confusion_matrix = metrics.confusion_matrix(y_gt, y_pred)
+    overall_accuracy = metrics.accuracy_score(y_gt, y_pred)
+    acc_for_each_class = metrics.precision_score(y_gt, y_pred, average=None)
+    average_accuracy = np.mean(acc_for_each_class)
+    kappa_coefficient = kappa(confusion_matrix, 5)
+    print('- Classify_report : \n', classify_report)
+    print('- Confusion_matrix : \n', confusion_matrix)
+    print('- Acc_for_each_class : \n', acc_for_each_class)
+    print('- Average_accuracy: {0:f}'.format(average_accuracy))
+    print('- Overall_accuracy: {0:f}'.format(overall_accuracy))
+    print('- Kappa coefficient: {0:f}'.format(kappa_coefficient))
 
 
 # Main for running test independently
