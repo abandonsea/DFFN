@@ -145,7 +145,12 @@ def train(writer=None):
             if cfg.val_split > 0:
                 test_model(model, val_loader, writer)
 
+        # Reset first epoch in case a checkpoint was loaded
         first_epoch = 0
+
+        # Save trained model
+        model_file = cfg.exec_folder + 'dffn_model_run_' + str(run) + '.pth'
+        torch.save(model.state_dict(), model_file)
         print(f'Finished training run {run + 1}')
 
 
