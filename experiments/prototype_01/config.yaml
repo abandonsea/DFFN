@@ -1,0 +1,30 @@
+# Dataset settings
+dataset: 'PaviaU'  # PaviaU; KSC; Salinas
+experiment: 'prototype_01'  # Name for the experiment (will be used to load all information)
+data_folder: './datasets/'  # Dataset folder
+exec_folder: './experiments/'  # Folder where to keep all the experiment data
+split_folder: 'data_split/'  # Where to store dataset splits
+checkpoint_folder: 'checkpoints/'  # Folder where to keep checkpoints
+checkpoint_file: null  # What checkpoint file to load (null for the latest)
+use_checkpoint: False  # Whether to load a checkpoint
+val_split: 0.15  # Fraction from the dataset used for validation [0, 1]
+train_split: 0.7  # Fraction from the dataset used for training [0, 1]
+train_batch_size: 10  # Batch size for every train iteration
+test_batch_size: 20  # Batch size for every test iteration
+sample_size: 23  # Window size for every sample/pixel input
+sample_bands: 5  # Number of bands after applying PCA
+generate_samples: True  # Whether the samples should be generated (False to load previously saved samples)
+max_samples: 80  # max training samples per class (null for no limit)
+
+# Hyper parameters
+num_runs: 2  # The amount of time the whole experiment should run
+num_epochs: 8  # Number of epochs per run
+learning_rate: 0.1  # Initial learning rate
+momentum: 0.9  # Momentum of optimizer
+weight_decay: 1e-4  # The weight decay for the optimizer
+gamma: 0.1  # Gamma parameter for the lr scheduler
+scheduler_step: 500  # Step size for the lr scheduler
+
+# Other options
+print_frequency: 5  # The amount of iterations between every step/loss print
+write_frequency: 5  # The amount of iterations between every tensorboard update
