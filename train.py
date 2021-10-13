@@ -12,10 +12,10 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from config import DFFNConfig
-from dffn_dataset import DFFNDataset
-from tools import *
-from net import DFFN
+from utils.config import DFFNConfig
+from utils.dffn_dataset import DFFNDataset
+from utils.tools import *
+from net.dffn_paviau import DFFN
 from test import test_model
 
 # Import tensorboard

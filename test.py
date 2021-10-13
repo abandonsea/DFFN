@@ -14,10 +14,10 @@ from sklearn import metrics
 import numpy as np
 from tqdm import tqdm
 
-from config import DFFNConfig
-from dffn_dataset import DFFNDataset
-from tools import *
-from net import DFFN
+from utils.config import DFFNConfig
+from utils.dffn_dataset import DFFNDataset
+from utils.tools import *
+from net.dffn_paviau import DFFN
 
 # Import tensorboard
 from torch.utils.tensorboard import SummaryWriter
