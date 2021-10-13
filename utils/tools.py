@@ -182,4 +182,10 @@ def load_checkpoint(checkpoint_folder, file):
     model_state = loaded_checkpoint['model_state']
     optimizer_state = loaded_checkpoint['optimizer_state']
     scheduler_state = loaded_checkpoint['scheduler_state']
-    return model_state, optimizer_state, scheduler_state, values_state
+    train_states = (model_state, optimizer_state, scheduler_state)
+
+    # Load best model record
+    best_model = loaded_checkpoint['best_model']
+    best_accuracy = loaded_checkpoint['best_accuracy']
+    best_model_state = (best_model, best_accuracy)
+    return values_state, train_states, best_model_state
