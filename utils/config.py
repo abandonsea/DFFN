@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Oct 07 19:02 2021
+Created on Thu Oct 07 19:02 2021
 
 @author: Pedro Vieira @description: Settings for the DFFN training and testing
 """
