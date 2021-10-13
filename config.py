@@ -23,9 +23,6 @@ class DFFNConfig:
             self.data_folder = cfg['data_folder']
             self.exec_folder = cfg['exec_folder'] + self.experiment + '/'
             self.split_folder = self.exec_folder + cfg['split_folder'] + self.dataset + '/'
-            self.checkpoint_folder = self. exec_folder + cfg['checkpoint_folder'] + self.dataset + '/'
-            self.checkpoint_file = cfg['checkpoint_file']
-            self.use_checkpoint = cfg['use_checkpoint']
             self.val_split = cfg['val_split']
             self.train_split = cfg['train_split']
             self.train_batch_size = cfg['train_batch_size']
@@ -45,6 +42,9 @@ class DFFNConfig:
             self.scheduler_step = cfg['scheduler_step']
 
             # Other options
+            self.checkpoint_folder = self. exec_folder + cfg['checkpoint_folder'] + self.dataset + '/'
+            self.checkpoint_file = cfg['checkpoint_file']
+            self.use_checkpoint = cfg['use_checkpoint']
             self.print_frequency = cfg['print_frequency']
             self.write_frequency = cfg['write_frequency']
 
