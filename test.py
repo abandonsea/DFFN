@@ -11,7 +11,6 @@ import torch
 import torch.nn.functional as f
 from torch.utils.data import DataLoader
 from sklearn import metrics
-import numpy as np
 from tqdm import tqdm
 
 from utils.config import DFFNConfig
@@ -32,10 +31,14 @@ CONFIG_FILE = ''  # Empty string to load default 'config.yaml'
 
 
 # Test DFFN runs
-def test(writer=None):
+def test():
     # Load config data from training
     config_file = 'config.yaml' if not CONFIG_FILE else CONFIG_FILE
     cfg = DFFNConfig(config_file, test=True)
+
+    # Start tensorboard
+    if cfg.use_tensorboard:
+        writer = SummaryWriter(cfg.tensorboard_folder)
 
     # Load processed dataset
     data = torch.load(cfg.exec_folder + 'proc_data.pth')
@@ -56,6 +59,9 @@ def test(writer=None):
 
         # Test model from the current run
         test_model(model, test_loader, writer)
+
+    if cfg.use_tensorboard:
+        writer.close()
 
 
 # Function for performing the tests for a given model and data loader
@@ -134,9 +140,7 @@ def get_report(y_pred, y_gt):
 
 # Main for running test independently
 def main():
-    writer = SummaryWriter('tensorboard')
     test()
-    writer.close()
 
 
 if __name__ == '__main__':

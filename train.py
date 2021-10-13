@@ -26,8 +26,13 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 # Train
-def train(writer=None):
+def train():
     cfg = DFFNConfig('config.yaml')
+
+    # Start tensorboard
+    if cfg.use_tensorboard:
+        writer = SummaryWriter(cfg.tensorboard_folder)
+
     # Load raw dataset, apply PCA and normalize dataset.
     data = HSIData(cfg.dataset, cfg.data_folder, cfg.sample_bands)
 
@@ -167,12 +172,13 @@ def train(writer=None):
     best_model_file = cfg.exec_folder + 'best_model.pth'
     torch.save(best_model, best_model_file)
 
+    if cfg.use_tensorboard:
+        writer.close()
+
 
 # Main function
 def main():
-    writer = SummaryWriter('tensorboard')
     train()
-    writer.close()
 
 
 if __name__ == '__main__':
