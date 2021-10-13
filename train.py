@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from utils.config import DFFNConfig
-from utils.dffn_dataset import DFFNDataset
+from utils.dataset import DFFNDataset
 from utils.tools import *
 from net.dffn_paviau import DFFN
 from test import test_model

@@ -15,7 +15,7 @@ import numpy as np
 from tqdm import tqdm
 
 from utils.config import DFFNConfig
-from utils.dffn_dataset import DFFNDataset
+from utils.dataset import DFFNDataset
 from utils.tools import *
 from net.dffn_paviau import DFFN
 
