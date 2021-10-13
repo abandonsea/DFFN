@@ -11,7 +11,7 @@ test_batch_size: 20  # Batch size for every test iteration
 sample_size: 23  # Window size for every sample/pixel input
 sample_bands: 5  # Number of bands after applying PCA
 generate_samples: True  # Whether the samples should be generated (False to load previously saved samples)
-max_samples: 160  # max training samples per class (null for no limit)
+max_samples: 200  # max training samples per class (null for no limit)
 
 # Hyper parameters
 num_runs: 3  # The amount of time the whole experiment should run
@@ -26,5 +26,5 @@ scheduler_step: 500  # Step size for the lr scheduler
 checkpoint_folder: 'checkpoints/'  # Folder where to keep checkpoints
 checkpoint_file: null  # What checkpoint file to load (null for the latest)
 use_checkpoint: False  # Whether to load a checkpoint
-print_frequency: 5  # The amount of iterations between every step/loss print
+print_frequency: 10  # The amount of iterations between every step/loss print
 write_frequency: 5  # The amount of iterations between every tensorboard update
