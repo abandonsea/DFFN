@@ -10,7 +10,7 @@ Created on Mon Sep 27 11:59 2021
 import torch
 import torch.nn as nn
 
-from dffn_blocks import ConvBlock, ResBlock
+from net.blocks import ConvBlock, ResBlock
 
 
 # Implementation of DFFN with the architecture used for PaviaU.

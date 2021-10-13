@@ -15,7 +15,7 @@ from tqdm import tqdm
 from utils.config import DFFNConfig
 from utils.dataset import DFFNDataset
 from utils.tools import *
-from net.dffn_paviau import DFFN
+from net.dffn import DFFN
 from test import test_model
 
 # Import tensorboard
