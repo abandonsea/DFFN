@@ -141,8 +141,8 @@ def train(writer=None):
                        cfg.checkpoint_folder + 'checkpoint_run_' + str(run) + '_epoch_' + str(epoch) + '.pth')
 
             # Run validation
-            print("STARTING VALIDATION {}/{}".format(epoch + 1, cfg.num_epochs))
             if cfg.val_split > 0:
+                print("STARTING VALIDATION {}/{}".format(epoch + 1, cfg.num_epochs))
                 test_model(model, val_loader, writer)
 
         # Reset first epoch in case a checkpoint was loaded
