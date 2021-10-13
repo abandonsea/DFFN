@@ -58,4 +58,6 @@ class DFFNConfig:
             os.makedirs(self.exec_folder)
             os.makedirs(self.split_folder)
             os.makedirs(self.checkpoint_folder)
+            if self.use_tensorboard:
+                os.makedirs(self.tensorboard_folder)
             shutil.copyfile(filename, self.exec_folder + filename)
