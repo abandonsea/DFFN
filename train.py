@@ -143,7 +143,9 @@ def train(writer=None):
             # Run validation
             if cfg.val_split > 0:
                 print("STARTING VALIDATION {}/{}".format(epoch + 1, cfg.num_epochs))
+                model.eval()
                 test_model(model, val_loader, writer)
+                model.train()
 
         # Reset first epoch in case a checkpoint was loaded
         first_epoch = 0
