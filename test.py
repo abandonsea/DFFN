@@ -99,6 +99,8 @@ def test_model(model, loader, writer=None):
                 prediction_i = prediction_pr[:, i]
                 writer.add_pr_curve(str(i), labels_i, prediction_i, global_step=0)
 
+    return acc
+
 
 # Compute kappa coefficient
 def kappa(confusion_matrix, k):
