@@ -103,14 +103,14 @@ def test_model(model, loader, writer=None):
 # Compute kappa coefficient
 def kappa(confusion_matrix, k):
     data_mat = np.mat(confusion_matrix)
-    P0 = 0.0
+    p_0 = 0.0
     for i in range(k):
-        P0 += data_mat[i, i] * 1.0
-    xsum = np.sum(data_mat, axis=1)
-    ysum = np.sum(data_mat, axis=0)
-    Pe = float(ysum * xsum) / np.sum(data_mat)**2
-    OA = float(P0 / np.sum(data_mat) * 1.0)
-    cohens_coefficient = float((OA - Pe) / (1 - Pe))
+        p_0 += data_mat[i, i] * 1.0
+    x_sum = np.sum(data_mat, axis=1)
+    y_sum = np.sum(data_mat, axis=0)
+    p_e = float(y_sum * x_sum) / np.sum(data_mat)**2
+    oa = float(p_0 / np.sum(data_mat) * 1.0)
+    cohens_coefficient = float((oa - p_e) / (1 - p_e))
     return cohens_coefficient
 
 
