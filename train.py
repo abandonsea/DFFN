@@ -12,10 +12,10 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from config import DFFNConfig
-from dffn_dataset import DFFNDataset
-from tools import *
-from net import DFFN
+from utils.config import DFFNConfig
+from utils.dataset import DFFNDataset
+from utils.tools import *
+from net.dffn import DFFN
 from test import test_model
 
 # Import tensorboard
@@ -26,17 +26,24 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 # Train
-def train(writer=None):
+def train():
     cfg = DFFNConfig('config.yaml')
+
+    # Start tensorboard
+    if cfg.use_tensorboard:
+        writer = SummaryWriter(cfg.tensorboard_folder)
+
     # Load raw dataset, apply PCA and normalize dataset.
     data = HSIData(cfg.dataset, cfg.data_folder, cfg.sample_bands)
 
     # Load a checkpoint
     if cfg.use_checkpoint:
         print('Loading checkpoint')
-        model_state, optimizer_state, scheduler_state, value_states = load_checkpoint(cfg.checkpoint_folder,
-                                                                                      cfg.checkpoint_file)
+        value_states, train_states, best_model_state = load_checkpoint(cfg.checkpoint_folder,
+                                                                       cfg.checkpoint_file)
         first_run, first_epoch, loss_state, correct_state = value_states
+        model_state, optimizer_state, scheduler_state = train_states
+        best_model, best_accuracy = best_model_state
         if first_epoch == cfg.num_epochs - 1:
             first_epoch = 0
             first_run += 1
@@ -44,6 +51,7 @@ def train(writer=None):
     else:
         first_run, first_epoch, loss_state, correct_state = (0, 0, 0.0, 0)
         model_state, optimizer_state, scheduler_state = None, None, None
+        best_model, best_accuracy = None, 0
 
         # Save data for tests if we are not loading a checkpoint
         data.save_data(cfg.exec_folder)
@@ -135,15 +143,22 @@ def train(writer=None):
                 'correct_state': running_correct,
                 'model_state': model.state_dict(),
                 'optimizer_state': optimizer.state_dict(),
-                'scheduler_state': lr_scheduler.state_dict()
+                'scheduler_state': lr_scheduler.state_dict(),
+                'best_accuracy': best_accuracy,
+                'best_model': best_model
             }
             torch.save(checkpoint,
                        cfg.checkpoint_folder + 'checkpoint_run_' + str(run) + '_epoch_' + str(epoch) + '.pth')
 
             # Run validation
-            print("STARTING VALIDATION {}/{}".format(epoch + 1, cfg.num_epochs))
             if cfg.val_split > 0:
-                test_model(model, val_loader, writer)
+                print("STARTING VALIDATION {}/{}".format(epoch + 1, cfg.num_epochs))
+                model.eval()
+                accuracy = test_model(model, val_loader, writer)
+                model.train()
+
+                if accuracy > best_accuracy:
+                    best_model = model.state_dict()
 
         # Reset first epoch in case a checkpoint was loaded
         first_epoch = 0
@@ -153,12 +168,17 @@ def train(writer=None):
         torch.save(model.state_dict(), model_file)
         print(f'Finished training run {run + 1}')
 
+    # Save the best model
+    best_model_file = cfg.exec_folder + 'best_model.pth'
+    torch.save(best_model, best_model_file)
+
+    if cfg.use_tensorboard:
+        writer.close()
+
 
 # Main function
 def main():
-    writer = SummaryWriter('tensorboard')
     train()
-    writer.close()
 
 
 if __name__ == '__main__':

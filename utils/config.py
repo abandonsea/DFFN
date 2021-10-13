@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Oct 07 19:02 2021
+Created on Thu Oct 07 19:02 2021
 
 @author: Pedro Vieira @description: Settings for the DFFN training and testing
 """
@@ -23,9 +23,6 @@ class DFFNConfig:
             self.data_folder = cfg['data_folder']
             self.exec_folder = cfg['exec_folder'] + self.experiment + '/'
             self.split_folder = self.exec_folder + cfg['split_folder'] + self.dataset + '/'
-            self.checkpoint_folder = self. exec_folder + cfg['checkpoint_folder'] + self.dataset + '/'
-            self.checkpoint_file = cfg['checkpoint_file']
-            self.use_checkpoint = cfg['use_checkpoint']
             self.val_split = cfg['val_split']
             self.train_split = cfg['train_split']
             self.train_batch_size = cfg['train_batch_size']
@@ -45,8 +42,14 @@ class DFFNConfig:
             self.scheduler_step = cfg['scheduler_step']
 
             # Other options
+            self.checkpoint_folder = self. exec_folder + cfg['checkpoint_folder'] + self.dataset + '/'
+            self.checkpoint_file = cfg['checkpoint_file']
+            self.use_checkpoint = cfg['use_checkpoint']
             self.print_frequency = cfg['print_frequency']
+            self.use_tensorboard = cfg['use_tensorboard']
             self.write_frequency = cfg['write_frequency']
+            if self.use_tensorboard:
+                self.tensorboard_folder = self.exec_folder + 'tensorboard/'
 
         # Copy config to execution folder
         if not (test or self.use_checkpoint or not self.generate_samples):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Oct 5 17:57 2021
+Created on Tue Oct 5 17:57 2021
 
 @author: Pedro Vieira
 @description: Implements the test function for the DFFN network published in https://github.com/weiweisong415/Demo_DFFN_for_TGRS2018
@@ -11,13 +11,12 @@ import torch
 import torch.nn.functional as f
 from torch.utils.data import DataLoader
 from sklearn import metrics
-import numpy as np
 from tqdm import tqdm
 
-from config import DFFNConfig
-from dffn_dataset import DFFNDataset
-from tools import *
-from net import DFFN
+from utils.config import DFFNConfig
+from utils.dataset import DFFNDataset
+from utils.tools import *
+from net.dffn import DFFN
 
 # Import tensorboard
 from torch.utils.tensorboard import SummaryWriter
@@ -32,10 +31,14 @@ CONFIG_FILE = ''  # Empty string to load default 'config.yaml'
 
 
 # Test DFFN runs
-def test(writer=None):
+def test():
     # Load config data from training
     config_file = 'config.yaml' if not CONFIG_FILE else CONFIG_FILE
     cfg = DFFNConfig(config_file, test=True)
+
+    # Start tensorboard
+    if cfg.use_tensorboard:
+        writer = SummaryWriter(cfg.tensorboard_folder)
 
     # Load processed dataset
     data = torch.load(cfg.exec_folder + 'proc_data.pth')
@@ -56,6 +59,9 @@ def test(writer=None):
 
         # Test model from the current run
         test_model(model, test_loader, writer)
+
+    if cfg.use_tensorboard:
+        writer.close()
 
 
 # Function for performing the tests for a given model and data loader
@@ -99,18 +105,20 @@ def test_model(model, loader, writer=None):
                 prediction_i = prediction_pr[:, i]
                 writer.add_pr_curve(str(i), labels_i, prediction_i, global_step=0)
 
+    return acc
+
 
 # Compute kappa coefficient
 def kappa(confusion_matrix, k):
     data_mat = np.mat(confusion_matrix)
-    P0 = 0.0
+    p_0 = 0.0
     for i in range(k):
-        P0 += data_mat[i, i] * 1.0
-    xsum = np.sum(data_mat, axis=1)
-    ysum = np.sum(data_mat, axis=0)
-    Pe = float(ysum * xsum) / np.sum(data_mat)**2
-    OA = float(P0 / np.sum(data_mat) * 1.0)
-    cohens_coefficient = float((OA - Pe) / (1 - Pe))
+        p_0 += data_mat[i, i] * 1.0
+    x_sum = np.sum(data_mat, axis=1)
+    y_sum = np.sum(data_mat, axis=0)
+    p_e = float(y_sum * x_sum) / np.sum(data_mat)**2
+    oa = float(p_0 / np.sum(data_mat) * 1.0)
+    cohens_coefficient = float((oa - p_e) / (1 - p_e))
     return cohens_coefficient
 
 
@@ -132,9 +140,7 @@ def get_report(y_pred, y_gt):
 
 # Main for running test independently
 def main():
-    writer = SummaryWriter('tensorboard')
     test()
-    writer.close()
 
 
 if __name__ == '__main__':
