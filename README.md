@@ -24,9 +24,12 @@ To test, run:
 python test.py
 ```
 
-# About datasets and checkpoints
+# About datasets
 The datasets are available [here](http://www.ehu.eus/ccwintco/index.php?title=Hyperspectral_Remote_Sensing_Scenes).
 The used datasets for this implementation are: PaviaU, Indian Pines and Salinas.
+
+# Config file
+Please refer to the config file `config.yaml` for details about the possible configurations of the network/training/testing.
 
 # Authorship disclaimer
 While I did write/review/modify alone the entire code, many parts of the code are heavily based on the original Matlab implementation, as well as the [S-DMM implementation](https://github.com/ShuGuoJ/S-DMM).
