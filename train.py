@@ -34,9 +34,11 @@ def train(writer=None):
     # Load a checkpoint
     if cfg.use_checkpoint:
         print('Loading checkpoint')
-        model_state, optimizer_state, scheduler_state, value_states = load_checkpoint(cfg.checkpoint_folder,
-                                                                                      cfg.checkpoint_file)
+        value_states, train_states, best_model_state = load_checkpoint(cfg.checkpoint_folder,
+                                                                       cfg.checkpoint_file)
         first_run, first_epoch, loss_state, correct_state = value_states
+        model_state, optimizer_state, scheduler_state = train_states
+        best_model, best_accuracy = best_model_state
         if first_epoch == cfg.num_epochs - 1:
             first_epoch = 0
             first_run += 1
@@ -44,6 +46,7 @@ def train(writer=None):
     else:
         first_run, first_epoch, loss_state, correct_state = (0, 0, 0.0, 0)
         model_state, optimizer_state, scheduler_state = None, None, None
+        best_model, best_accuracy = None, 0
 
         # Save data for tests if we are not loading a checkpoint
         data.save_data(cfg.exec_folder)
@@ -135,7 +138,9 @@ def train(writer=None):
                 'correct_state': running_correct,
                 'model_state': model.state_dict(),
                 'optimizer_state': optimizer.state_dict(),
-                'scheduler_state': lr_scheduler.state_dict()
+                'scheduler_state': lr_scheduler.state_dict(),
+                'best_accuracy': best_accuracy,
+                'best_model': best_model
             }
             torch.save(checkpoint,
                        cfg.checkpoint_folder + 'checkpoint_run_' + str(run) + '_epoch_' + str(epoch) + '.pth')
@@ -144,8 +149,11 @@ def train(writer=None):
             if cfg.val_split > 0:
                 print("STARTING VALIDATION {}/{}".format(epoch + 1, cfg.num_epochs))
                 model.eval()
-                test_model(model, val_loader, writer)
+                accuracy = test_model(model, val_loader, writer)
                 model.train()
+
+                if accuracy > best_accuracy:
+                    best_model = model.state_dict()
 
         # Reset first epoch in case a checkpoint was loaded
         first_epoch = 0
@@ -154,6 +162,10 @@ def train(writer=None):
         model_file = cfg.exec_folder + 'dffn_model_run_' + str(run) + '.pth'
         torch.save(model.state_dict(), model_file)
         print(f'Finished training run {run + 1}')
+
+    # Save the best model
+    best_model_file = cfg.exec_folder + 'best_model.pth'
+    torch.save(best_model, best_model_file)
 
 
 # Main function
