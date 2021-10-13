@@ -27,4 +27,5 @@ checkpoint_folder: 'checkpoints/'  # Folder where to keep checkpoints
 checkpoint_file: null  # What checkpoint file to load (null for the latest)
 use_checkpoint: False  # Whether to load a checkpoint
 print_frequency: 10  # The amount of iterations between every step/loss print
+use_tensorboard: False  # Whether to use tensor boar for training information
 write_frequency: 5  # The amount of iterations between every tensorboard update

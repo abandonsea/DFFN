@@ -46,7 +46,10 @@ class DFFNConfig:
             self.checkpoint_file = cfg['checkpoint_file']
             self.use_checkpoint = cfg['use_checkpoint']
             self.print_frequency = cfg['print_frequency']
+            self.use_tensorboard = cfg['use_tensorboard']
             self.write_frequency = cfg['write_frequency']
+            if self.use_tensorboard:
+                self.tensorboard_folder = self.exec_folder + 'tensorboard/'
 
         # Copy config to execution folder
         if not (test or self.use_checkpoint or not self.generate_samples):
