@@ -90,12 +90,9 @@ def test_model(model, loader, writer=None):
             total_labels = np.append(total_labels, labels.numpy())
 
         report = get_report(total_predicted, total_labels)
-        print('- Classify report : \n', report['classify_report'])
-        print('- Confusion matrix : \n', report['confusion_matrix'])
-        print('- Acc. for each class : \n', report['class_accuracy'])
-        print('- Overall accuracy: {0:f}'.format(report['overall_accuracy']))
-        print('- Average accuracy: {0:f}'.format(report['average_accuracy']))
-        print('- Kappa coefficient: {0:f}'.format(report['kappa']))
+        print(f'- Overall accuracy: {report["overall_accuracy"]:f}')
+        print(f'- Average accuracy: {report["average_accuracy"]:f}')
+        print(f'- Kappa coefficient: {report["kappa"]:f}')
 
         if writer is not None:
             # Accuracy per class
