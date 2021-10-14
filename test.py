@@ -60,7 +60,9 @@ def test():
         model.eval()
 
         # Test model from the current run
-        test_model(model, test_loader, writer)
+        report = test_model(model, test_loader, writer)
+        filename = cfg.results_folder + 'test.txt'
+        save_results(filename, report, run)
 
     if cfg.use_tensorboard:
         writer.close()

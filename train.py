@@ -154,9 +154,14 @@ def train():
             if cfg.val_split > 0:
                 print("STARTING VALIDATION {}/{}".format(epoch + 1, cfg.num_epochs))
                 model.eval()
-                accuracy = test_model(model, val_loader, writer)
+                report = test_model(model, val_loader, writer)
                 model.train()
 
+                # Save validation results
+                filename = cfg.results_folder + 'validations.txt'
+                save_results(filename, report, run, epoch, validation=True)
+
+                accuracy = report['overall_accuracy']
                 if accuracy > best_accuracy:
                     best_model = model.state_dict()
 

@@ -189,3 +189,22 @@ def load_checkpoint(checkpoint_folder, file):
     best_accuracy = loaded_checkpoint['best_accuracy']
     best_model_state = (best_model, best_accuracy)
     return values_state, train_states, best_model_state
+
+
+def save_results(filename, report, run, epoch=-1, validation=False):
+    mode = 'VALIDATION' if validation else 'TEST'
+
+    epoch_str = ''
+    if validation:
+        assert epoch >= 0, 'Epoch should be a positive integer value'
+        epoch_str = f' EPOCH {epoch}'
+
+    with open(filename, 'a') as file:
+        file.write(f'{mode} RESULTS FOR RUN {run + 1}{epoch_str}\n')
+        file.write(f'\t- Classify report:\n\t{report["classify_report"]}')
+        file.write(f'\t- Confusion matrix:\n\t{report["confusion_matrix"]}')
+        file.write(f'\t- Acc. for each class:\n\t{report["class_accuracy"]}')
+        file.write(f'\t- Overall accuracy: {report["overall_accuracy"]:f}')
+        file.write(f'\t- Average accuracy: {report["average_accuracy"]:f}')
+        file.write(f'\t- Kappa coefficient: {report["kappa"]:f}\n')
+        file.write('#' * 20)
