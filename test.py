@@ -10,6 +10,7 @@ Created on Tue Oct 5 17:57 2021
 import torch
 import torch.nn.functional as f
 from torch.utils.data import DataLoader
+import numpy as np
 from sklearn import metrics
 from tqdm import tqdm
 
@@ -70,8 +71,8 @@ def test_model(model, loader, writer=None):
     labels_pr = []
     prediction_pr = []
     with torch.no_grad():
-        n_correct = 0
-        n_samples = 0
+        total_predicted = np.array([], dtype=int)
+        total_labels = np.array([], dtype=int)
         for i, (images, labels) in tqdm(enumerate(loader), total=len(loader)):
             # for images, labels in loader:
             # Get input and compute model output
@@ -79,34 +80,51 @@ def test_model(model, loader, writer=None):
             labels = labels.to(device)
             outputs = model(images)
 
+            # Get predicted outputs
             _, predicted = torch.max(outputs, 1)
-            n_samples += labels.shape[0]
-            n_correct += (predicted == labels).sum().item()
 
-            class_predictions = [f.softmax(output, dim=0) for output in outputs]
+            # Save total values for analysis
+            total_predicted = np.append(total_predicted, predicted.numpy())
+            total_labels = np.append(total_labels, labels.numpy())
 
-            prediction_pr.append(class_predictions)
-            labels_pr.append(predicted)
-
-        prediction_pr = torch.cat([torch.stack(batch) for batch in prediction_pr])
-        labels_pr = torch.cat(labels_pr)
-
-        acc = 100.0 * n_correct / n_samples
-        print(f'- Accuracy = {acc} %')
-
-        # TODO: Also add measures like OA, AA and kappa
-        # Test it!
-        # get_report(prediction_pr, labels)
+        report = get_report(total_predicted, total_labels)
+        print('- Classify report : \n', report['classify_report'])
+        print('- Confusion matrix : \n', report['confusion_matrix'])
+        print('- Acc. for each class : \n', report['class_accuracy'])
+        print('- Overall accuracy: {0:f}'.format(report['overall_accuracy']))
+        print('- Average accuracy: {0:f}'.format(report['average_accuracy']))
+        print('- Kappa coefficient: {0:f}'.format(report['kappa']))
 
         if writer is not None:
             # Accuracy per class
-            classes = range(10)
+            classes = range(9)
             for i in classes:
                 labels_i = labels_pr == i
                 prediction_i = prediction_pr[:, i]
                 writer.add_pr_curve(str(i), labels_i, prediction_i, global_step=0)
 
-    return acc
+    return report
+
+
+# Compute OA, AA and kappa from the results
+def get_report(y_pr, y_gt):
+    classify_report = metrics.classification_report(y_gt, y_pr)
+    confusion_matrix = metrics.confusion_matrix(y_gt, y_pr)
+    class_accuracy = metrics.precision_score(y_gt, y_pr, average=None)
+    overall_accuracy = metrics.accuracy_score(y_gt, y_pr)
+    average_accuracy = np.mean(class_accuracy)
+    kappa_coefficient = kappa(confusion_matrix, 5)
+
+    # Save report values
+    report = {
+        'classify_report': classify_report,
+        'confusion_matrix': confusion_matrix,
+        'class_accuracy': class_accuracy,
+        'overall_accuracy': overall_accuracy,
+        'average_accuracy': average_accuracy,
+        'kappa': kappa_coefficient
+    }
+    return report
 
 
 # Compute kappa coefficient
@@ -121,22 +139,6 @@ def kappa(confusion_matrix, k):
     oa = float(p_0 / np.sum(data_mat) * 1.0)
     cohens_coefficient = float((oa - p_e) / (1 - p_e))
     return cohens_coefficient
-
-
-# Compute OA, AA and kappa from the results
-def get_report(y_pred, y_gt):
-    classify_report = metrics.classification_report(y_gt, y_pred)
-    confusion_matrix = metrics.confusion_matrix(y_gt, y_pred)
-    overall_accuracy = metrics.accuracy_score(y_gt, y_pred)
-    acc_for_each_class = metrics.precision_score(y_gt, y_pred, average=None)
-    average_accuracy = np.mean(acc_for_each_class)
-    kappa_coefficient = kappa(confusion_matrix, 5)
-    print('- Classify_report : \n', classify_report)
-    print('- Confusion_matrix : \n', confusion_matrix)
-    print('- Acc_for_each_class : \n', acc_for_each_class)
-    print('- Average_accuracy: {0:f}'.format(average_accuracy))
-    print('- Overall_accuracy: {0:f}'.format(overall_accuracy))
-    print('- Kappa coefficient: {0:f}'.format(kappa_coefficient))
 
 
 # Main for running test independently
