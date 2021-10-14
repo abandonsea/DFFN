@@ -37,6 +37,7 @@ def test():
     cfg = DFFNConfig(config_file, test=True)
 
     # Start tensorboard
+    writer = None
     if cfg.use_tensorboard:
         writer = SummaryWriter(cfg.tensorboard_folder)
 
