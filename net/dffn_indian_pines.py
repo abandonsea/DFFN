@@ -3,8 +3,8 @@
 """
 Created on Mon Sep 27 11:59 2021
 
-@author: Pedro Vieira @description: Implements the network described in
-https://github.com/weiweisong415/Demo_DFFN_for_TGRS2018/blob/master/prototxt_files/train_paviau.prototxt
+@author: Pedro Vieira
+@description: Implements the network described in https://github.com/weiweisong415/Demo_DFFN_for_TGRS2018/blob/master/prototxt_files/train_paviau.prototxt
 """
 
 import torch
