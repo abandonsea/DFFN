@@ -14,7 +14,7 @@ from net.blocks import ConvBlock, ResBlock
 
 
 # Implementation of DFFN with the architecture used for Indian Pines.
-# The sample size that was used is 25x25x3. The 5 channels are obtained by doing a PCA with the input data.
+# The sample size that was used is 25x25x3. The 3 channels are obtained by doing a PCA with the input data.
 # The given input size should result in a 6x6x64 feature map when all stages are fused.
 class DFFN(nn.Module):
     """DFFN architecture for Indian Pines"""
