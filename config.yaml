@@ -23,6 +23,7 @@ gamma: 0.1  # Gamma parameter for the lr scheduler
 scheduler_step: 500  # Step size for the lr scheduler
 
 # Other options
+results_folder: 'results/'  # Folder where to write the validation and test results
 checkpoint_folder: 'checkpoints/'  # Folder where to keep checkpoints
 checkpoint_file: null  # What checkpoint file to load (null for the latest)
 use_checkpoint: False  # Whether to load a checkpoint

@@ -42,6 +42,7 @@ class DFFNConfig:
             self.scheduler_step = cfg['scheduler_step']
 
             # Other options
+            self.results_folder = self.exec_folder + cfg['results_folder']
             self.checkpoint_folder = self. exec_folder + cfg['checkpoint_folder'] + self.dataset + '/'
             self.checkpoint_file = cfg['checkpoint_file']
             self.use_checkpoint = cfg['use_checkpoint']
@@ -57,6 +58,7 @@ class DFFNConfig:
                                                         'Please provide a new experiment name.'
             os.makedirs(self.exec_folder)
             os.makedirs(self.split_folder)
+            os.makedirs(self.results_folder)
             os.makedirs(self.checkpoint_folder)
             if self.use_tensorboard:
                 os.makedirs(self.tensorboard_folder)
