@@ -137,21 +137,6 @@ def train():
                         running_loss = 0.0
                         running_correct = 0
 
-            # Save checkpoint
-            checkpoint = {
-                'run': run,
-                'epoch': epoch,
-                'loss_state': running_loss,
-                'correct_state': running_correct,
-                'model_state': model.state_dict(),
-                'optimizer_state': optimizer.state_dict(),
-                'scheduler_state': lr_scheduler.state_dict(),
-                'best_accuracy': best_accuracy,
-                'best_model': best_model
-            }
-            torch.save(checkpoint,
-                       cfg.checkpoint_folder + 'checkpoint_run_' + str(run) + '_epoch_' + str(epoch) + '.pth')
-
             # Run validation
             if cfg.val_split > 0:
                 print("STARTING VALIDATION {}/{}".format(epoch + 1, cfg.num_epochs))
@@ -167,6 +152,21 @@ def train():
                 if accuracy > best_accuracy:
                     best_accuracy = accuracy
                     best_model = model.state_dict()
+
+            # Save checkpoint
+            checkpoint = {
+                'run': run,
+                'epoch': epoch,
+                'loss_state': running_loss,
+                'correct_state': running_correct,
+                'model_state': model.state_dict(),
+                'optimizer_state': optimizer.state_dict(),
+                'scheduler_state': lr_scheduler.state_dict(),
+                'best_accuracy': best_accuracy,
+                'best_model': best_model
+            }
+            torch.save(checkpoint,
+                       cfg.checkpoint_folder + 'checkpoint_run_' + str(run) + '_epoch_' + str(epoch) + '.pth')
 
         # Reset first epoch in case a checkpoint was loaded
         first_epoch = 0
