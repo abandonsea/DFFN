@@ -8,7 +8,7 @@ Created on Tue Oct 5 17:57 2021
 """
 
 import torch
-import torch.nn.functional as f
+import torch.nn as nn
 from torch.utils.data import DataLoader
 import numpy as np
 from sklearn import metrics
@@ -58,6 +58,11 @@ def test():
         model = DFFN()
         model.load_state_dict(torch.load(model_file))
         model.eval()
+
+        # Set model to device
+        if device == 'cuda':
+            model = nn.DataParallel(model)
+        model = model.to(device)
 
         # Test model from the current run
         report = test_model(model, test_loader, writer)
