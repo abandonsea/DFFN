@@ -30,6 +30,7 @@ def train():
     cfg = DFFNConfig('config.yaml')
 
     # Start tensorboard
+    writer = None
     if cfg.use_tensorboard:
         writer = SummaryWriter(cfg.tensorboard_folder)
 
