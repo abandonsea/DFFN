@@ -74,6 +74,7 @@ def train():
         val_dataset = DFFNDataset(data.image, val_gt, cfg.sample_size, data_augmentation=False)
 
         # Create train and test loaders
+        # TODO: check num workers
         train_loader = DataLoader(train_dataset, batch_size=cfg.train_batch_size, shuffle=True, num_workers=4)
         val_loader = DataLoader(val_dataset, batch_size=cfg.test_batch_size, shuffle=False)
 
@@ -164,6 +165,7 @@ def train():
 
                 accuracy = report['overall_accuracy']
                 if accuracy > best_accuracy:
+                    best_accuracy = accuracy
                     best_model = model.state_dict()
 
         # Reset first epoch in case a checkpoint was loaded
