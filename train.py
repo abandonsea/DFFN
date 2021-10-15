@@ -74,7 +74,6 @@ def train():
         val_dataset = DFFNDataset(data.image, val_gt, cfg.sample_size, data_augmentation=False)
 
         # Create train and test loaders
-        # TODO: check num workers
         train_loader = DataLoader(train_dataset, batch_size=cfg.train_batch_size, shuffle=True, num_workers=4)
         val_loader = DataLoader(val_dataset, batch_size=cfg.test_batch_size, shuffle=False)
 
@@ -122,7 +121,7 @@ def train():
                 # Print steps and loss every PRINT_FREQUENCY
                 if (i + 1) % cfg.print_frequency == 0:
                     tqdm.write(
-                        f'\tEpoch [{epoch + 1}/{cfg.num_epochs}], Step [{i + 1}/{total_steps}]\tLoss: {loss.item():.4f}')
+                        f'\tEpoch [{epoch + 1}/{cfg.num_epochs}] Step [{i + 1}/{total_steps}]\tLoss: {loss.item():.5f}')
 
                 # Compute intermediate results for visualization
                 if writer is not None:
