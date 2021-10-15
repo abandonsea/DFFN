@@ -86,8 +86,8 @@ def test_model(model, loader, writer=None):
             _, predicted = torch.max(outputs, 1)
 
             # Save total values for analysis
-            total_predicted = np.append(total_predicted, predicted.numpy())
-            total_labels = np.append(total_labels, labels.numpy())
+            total_predicted = np.append(total_predicted, predicted.cpu().numpy())
+            total_labels = np.append(total_labels, labels.cpu().numpy())
 
         report = get_report(total_predicted, total_labels)
         print(f'- Overall accuracy: {report["overall_accuracy"]:f}')
