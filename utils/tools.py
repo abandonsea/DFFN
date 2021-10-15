@@ -107,8 +107,10 @@ class HSIData:
 
         val_gt = None
         if val_size > 0:
+            max_val_samples =\
+                None if max_train_samples is None else int(max_train_samples * np.ceil(val_size / train_size))
+
             relative_val_size = val_size / (1 - train_size)
-            max_val_samples = int(max_train_samples * np.ceil(val_size / train_size))
             val_gt, test_gt = self.split_ground_truth(test_gt, relative_val_size, max_val_samples)
 
         return train_gt, test_gt, val_gt
