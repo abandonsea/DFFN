@@ -97,9 +97,8 @@ def train():
             running_correct = correct_state
 
         # Run epochs
-        if device == 'cuda':
-            model = nn.DataParallel(model)
-        model = model.to(device)
+        model = nn.DataParallel(model).to(device)
+        criterion = nn.DataParallel(criterion).to(device)
         total_steps = len(train_loader)
         for epoch in range(first_epoch, cfg.num_epochs):
             print("STARTING EPOCH {}/{}".format(epoch + 1, cfg.num_epochs))
