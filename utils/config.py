@@ -48,7 +48,6 @@ class DFFNConfig:
             self.use_checkpoint = cfg['use_checkpoint']
             self.print_frequency = cfg['print_frequency']
             self.use_tensorboard = cfg['use_tensorboard']
-            self.write_frequency = cfg['write_frequency']
             if self.use_tensorboard:
                 self.tensorboard_folder = self.exec_folder + 'tensorboard/'
 

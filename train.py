@@ -119,23 +119,27 @@ def train():
                 optimizer.step()
                 lr_scheduler.step()
 
+                # Compute running loss and number of correct predictions for printing
+                running_loss += loss.item()
+                _, predicted = torch.max(outputs.data, 1)
+                running_correct += (predicted == labels).sum().item() / labels.shape[0]
+
                 # Print steps and loss every PRINT_FREQUENCY
                 if (i + 1) % cfg.print_frequency == 0:
+                    avg_loss = running_loss / cfg.print_frequency
+                    accuracy = running_correct / cfg.print_frequency
+                    running_loss = 0.0
+                    running_correct = 0
+
+                    # Print data
                     tqdm.write(
-                        f'\tEpoch [{epoch + 1}/{cfg.num_epochs}] Step [{i + 1}/{total_steps}]\tLoss: {loss.item():.5f}')
+                        f'\tEpoch [{epoch + 1}/{cfg.num_epochs}] Step [{i + 1}/{total_steps}]'
+                        f'\tLoss: {avg_loss:.5f}\tAccuracy: {accuracy:.5f}')
 
-                # Compute intermediate results for visualization
-                if writer is not None:
-                    running_loss += loss.item()
-                    _, predicted = torch.max(outputs.data, 1)
-                    running_correct += (predicted == labels).sum().item()
-
-                    # Write steps and loss every WRITE_FREQUENCY to tensorboard
-                    if (i + 1) % cfg.write_frequency == 0:
-                        writer.add_scalar('training loss', running_loss / cfg.write_frequency, epoch * total_steps + i)
-                        writer.add_scalar('accuracy', running_correct / cfg.write_frequency, epoch * total_steps + i)
-                        running_loss = 0.0
-                        running_correct = 0
+                    # Compute intermediate results for visualization
+                    if writer is not None:
+                        writer.add_scalar('training loss', avg_loss, epoch * total_steps + i)
+                        writer.add_scalar('accuracy', accuracy, epoch * total_steps + i)
 
             # Run validation
             if cfg.val_split > 0:
