@@ -1,19 +1,19 @@
 # Dataset settings
 dataset: 'PaviaU'  # PaviaU; KSC; Salinas
-experiment: 'prototype_01'  # Name for the experiment (will be used to load all information)
+experiment: 'prototype_02'  # Name for the experiment (will be used to load all information)
 data_folder: './datasets/'  # Dataset folder
 exec_folder: './experiments/'  # Folder where to keep all the experiment data
 split_folder: 'data_split/'  # Where to store dataset splits
 val_split: 0.15  # Fraction from the dataset used for validation [0, 1]
 train_split: 0.7  # Fraction from the dataset used for training [0, 1]
-train_batch_size: 100  # Batch size for every train iteration
-test_batch_size: 20  # Batch size for every test iteration
-sample_size: 23  # Window size for every sample/pixel input
-sample_bands: 5  # Number of bands after applying PCA
 generate_samples: True  # Whether the samples should be generated (False to load previously saved samples)
 max_samples: 300  # max training samples per class (null for no limit)
 
 # Hyper parameters
+train_batch_size: 100  # Batch size for every train iteration
+test_batch_size: 20  # Batch size for every test iteration
+sample_size: 23  # Window size for every sample/pixel input
+sample_bands: 5  # Number of bands after applying PCA
 num_runs: 1  # The amount of time the whole experiment should run
 num_epochs: 1  # Number of epochs per run
 learning_rate: 0.1  # Initial learning rate

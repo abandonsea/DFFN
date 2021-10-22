@@ -25,14 +25,14 @@ class DFFNConfig:
             self.split_folder = self.exec_folder + cfg['split_folder'] + self.dataset + '/'
             self.val_split = cfg['val_split']
             self.train_split = cfg['train_split']
-            self.train_batch_size = cfg['train_batch_size']
-            self.test_batch_size = cfg['test_batch_size']
-            self.sample_size = cfg['sample_size']
-            self.sample_bands = cfg['sample_bands']
             self.generate_samples = cfg['generate_samples']
             self.max_samples = cfg['max_samples']
 
             # Hyper parameters
+            self.train_batch_size = cfg['train_batch_size']
+            self.test_batch_size = cfg['test_batch_size']
+            self.sample_size = cfg['sample_size']
+            self.sample_bands = cfg['sample_bands']
             self.num_runs = cfg['num_runs']
             self.num_epochs = cfg['num_epochs']
             self.learning_rate = cfg['learning_rate']
@@ -59,6 +59,7 @@ class DFFNConfig:
             os.makedirs(self.split_folder)
             os.makedirs(self.results_folder)
             os.makedirs(self.checkpoint_folder)
+            os.makedirs(self.exec_folder + 'runs/')
             if self.use_tensorboard:
                 os.makedirs(self.tensorboard_folder)
             shutil.copyfile(filename, self.exec_folder + filename)
