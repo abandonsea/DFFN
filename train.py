@@ -100,6 +100,10 @@ def train():
         model = model.to(device)
         criterion = criterion.to(device)
 
+        # Save best models per run
+        run_best_model = None
+        run_best_accuracy = 0.0
+
         # Run epochs
         total_steps = len(train_loader)
         for epoch in range(first_epoch, cfg.num_epochs):
@@ -155,9 +159,13 @@ def train():
                 save_results(filename, report, run, epoch, validation=True)
 
                 accuracy = report['overall_accuracy']
-                if accuracy > best_accuracy:
-                    best_accuracy = accuracy
-                    best_model = model.state_dict()
+                if accuracy > run_best_accuracy:
+                    run_best_accuracy = accuracy
+                    run_best_model = model.state_dict()
+
+                    if accuracy > best_accuracy:
+                        best_accuracy = accuracy
+                        best_model = model.state_dict()
 
             # Save checkpoint
             checkpoint = {
@@ -178,8 +186,10 @@ def train():
         first_epoch = 0
 
         # Save trained model
-        model_file = cfg.exec_folder + 'runs/dffn_model_run_' + str(run) + '.pth'
+        model_file = cfg.exec_folder + f'runs/dffn_model_run_{run}.pth'
+        run_best_file = cfg.exec_folder + f'runs/dffn_best_model_run_{run}.pth'
         torch.save(model.state_dict(), model_file)
+        torch.save(run_best_model, run_best_file)
         print(f'Finished training run {run + 1}')
 
     # Save the best model
