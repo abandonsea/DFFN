@@ -42,10 +42,11 @@ class DFFNConfig:
             self.scheduler_step = cfg['scheduler_step']
 
             # Other options
+            self.test_best_models = cfg['test_best_models']
+            self.use_checkpoint = cfg['use_checkpoint']
             self.results_folder = self.exec_folder + cfg['results_folder']
             self.checkpoint_folder = self. exec_folder + cfg['checkpoint_folder'] + self.dataset + '/'
             self.checkpoint_file = cfg['checkpoint_file']
-            self.use_checkpoint = cfg['use_checkpoint']
             self.print_frequency = cfg['print_frequency']
             self.use_tensorboard = cfg['use_tensorboard']
             if self.use_tensorboard:
