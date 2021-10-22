@@ -54,7 +54,7 @@ def test():
         test_loader = DataLoader(test_dataset, batch_size=cfg.test_batch_size, shuffle=False)
 
         # Load model
-        model_file = cfg.exec_folder + 'dffn_model_run_' + str(run) + '.pth'
+        model_file = cfg.exec_folder + 'runs/dffn_model_run_' + str(run) + '.pth'
         model = nn.DataParallel(DFFN())
         model.load_state_dict(torch.load(model_file))
         model.eval()
