@@ -55,13 +55,11 @@ def test():
 
         # Load model
         model_file = cfg.exec_folder + 'dffn_model_run_' + str(run) + '.pth'
-        model = DFFN()
+        model = nn.DataParallel(DFFN())
         model.load_state_dict(torch.load(model_file))
         model.eval()
 
         # Set model to device
-        if device == 'cuda':
-            model = nn.DataParallel(model)
         model = model.to(device)
 
         # Test model from the current run

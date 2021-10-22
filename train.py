@@ -78,7 +78,7 @@ def train():
         val_loader = DataLoader(val_dataset, batch_size=cfg.test_batch_size, shuffle=False)
 
         # Setup model, optimizer, loss and scheduler
-        model = DFFN()
+        model = nn.DataParallel(DFFN())
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(model.parameters(), lr=cfg.learning_rate, momentum=cfg.momentum,
                                     weight_decay=cfg.weight_decay)
@@ -96,9 +96,11 @@ def train():
             running_loss = loss_state
             running_correct = correct_state
 
+        # Enable GPU training
+        model = model.to(device)
+        criterion = criterion.to(device)
+
         # Run epochs
-        model = nn.DataParallel(model).to(device)
-        criterion = nn.DataParallel(criterion).to(device)
         total_steps = len(train_loader)
         for epoch in range(first_epoch, cfg.num_epochs):
             print("STARTING EPOCH {}/{}".format(epoch + 1, cfg.num_epochs))
