@@ -78,7 +78,7 @@ def train():
         val_loader = DataLoader(val_dataset, batch_size=cfg.test_batch_size, shuffle=False)
 
         # Setup model, optimizer, loss and scheduler
-        model = nn.DataParallel(DFFN())
+        model = nn.DataParallel(DFFN(cfg.sample_bands, data.num_classes))
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(model.parameters(), lr=cfg.learning_rate, momentum=cfg.momentum,
                                     weight_decay=cfg.weight_decay)
@@ -146,6 +146,10 @@ def train():
                     if writer is not None:
                         writer.add_scalar('training loss', avg_loss, epoch * total_steps + i)
                         writer.add_scalar('accuracy', accuracy, epoch * total_steps + i)
+
+            # Reset running loss and corrects
+            running_loss = 0.0
+            running_correct = 0
 
             # Run validation
             if cfg.val_split > 0:
