@@ -67,6 +67,7 @@ class HSIData:
         self.ground_truth = gt
         ignored_labels = [0]
         self.ignored_labels = list(set(ignored_labels))
+        self.num_classes = len(self.label_values) - len(self.ignored_labels)
 
         img = np.asarray(img, dtype='float32')
         self.image, self.pca, _, _ = self.apply_dimension_reduction(img, num_bands)
