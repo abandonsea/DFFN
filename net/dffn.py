@@ -19,13 +19,13 @@ from net.blocks import ConvBlock, ResBlock
 class DFFN(nn.Module):
     """DFFN architecture for PaviaU"""
 
-    def __init__(self):
+    def __init__(self, input_channels, num_classes):
         super(DFFN, self).__init__()
 
         self.relu = nn.ReLU()
 
         # Stage 1
-        self.pre_block1 = ConvBlock(5, feature_dim=16)
+        self.pre_block1 = ConvBlock(input_channels, feature_dim=16)
         self.block1 = ResBlock(16, feature_dim=16)
         self.block2 = ResBlock(16, feature_dim=16)
         self.block3 = ResBlock(16, feature_dim=16)
@@ -52,7 +52,7 @@ class DFFN(nn.Module):
         self.dim_matching1 = ConvBlock(16, feature_dim=64, stride=4)
         self.dim_matching2 = ConvBlock(32, feature_dim=64, stride=2)
         self.pool = nn.AvgPool2d(kernel_size=5)  # Input of this layer should have size 5x5x64
-        self.fc1 = nn.Linear(64, 9)  # PaviaU has 9 classes
+        self.fc1 = nn.Linear(64, num_classes)  # PaviaU has 9 classes
 
     def forward(self, x):
         # Stage 1
