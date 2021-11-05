@@ -58,9 +58,11 @@ def test():
         test_dataset = DFFNDataset(data, test_gt, cfg.sample_size, data_augmentation=False)
         test_loader = DataLoader(test_dataset, batch_size=cfg.test_batch_size, shuffle=False)
 
+        num_classes = len(np.unique(test_gt)) - 1
+
         # Load model
         model_file = cfg.exec_folder + f'runs/dffn_{test_best}model_run_' + str(run) + '.pth'
-        model = nn.DataParallel(DFFN(cfg.sample_bands, data.shape[2]))
+        model = nn.DataParallel(DFFN(cfg.sample_bands, num_classes))
         model.load_state_dict(torch.load(model_file))
         model.eval()
 
