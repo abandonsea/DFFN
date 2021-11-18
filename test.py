@@ -122,7 +122,7 @@ def get_report(y_pr, y_gt):
     class_accuracy = metrics.precision_score(y_gt, y_pr, average=None)
     overall_accuracy = metrics.accuracy_score(y_gt, y_pr)
     average_accuracy = np.mean(class_accuracy)
-    kappa_coefficient = kappa(confusion_matrix, 5)
+    kappa_coefficient = kappa(confusion_matrix)
 
     # Save report values
     report = {
@@ -137,10 +137,10 @@ def get_report(y_pr, y_gt):
 
 
 # Compute kappa coefficient
-def kappa(confusion_matrix, k):
+def kappa(confusion_matrix):
     data_mat = np.mat(confusion_matrix)
     p_0 = 0.0
-    for i in range(k):
+    for i in range(confusion_matrix.shape[0]):
         p_0 += data_mat[i, i] * 1.0
     x_sum = np.sum(data_mat, axis=1)
     y_sum = np.sum(data_mat, axis=0)
