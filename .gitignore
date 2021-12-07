@@ -6,3 +6,4 @@ checkpoints/*
 datasets/*
 dataset_split/*
 tensorboard/*
+*.out
