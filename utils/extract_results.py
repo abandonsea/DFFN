@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os
 import numpy as np
 
 ############
@@ -50,7 +49,7 @@ def get_values(filename):
     return oa, aa, kappa
 
 
-# Main for running test independently
+# Main for running script independently
 def main():
     for data in DATASETS:
         for net in NETWORKS:
