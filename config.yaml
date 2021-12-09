@@ -28,5 +28,6 @@ use_checkpoint: False  # Whether to load a checkpoint during training
 results_folder: 'results/'  # Folder where to write the validation and test results
 checkpoint_folder: 'checkpoints/'  # Folder where to keep checkpoints
 checkpoint_file: null  # What checkpoint file to load (null for the latest)
+delete_checkpoints: True  # Delete checkpoints after successfully training the network (saves storage)
 print_frequency: 40  # The amount of iterations between every step/loss print
 use_tensorboard: False  # Whether to use tensor boar for training information

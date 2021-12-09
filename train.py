@@ -11,6 +11,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+import shutil
 
 from utils.config import DFFNConfig
 from utils.dataset import DFFNDataset
@@ -199,6 +200,9 @@ def train():
     # Save the best model
     best_model_file = cfg.exec_folder + 'best_model.pth'
     torch.save(best_model, best_model_file)
+
+    if cfg.delete_checkpoints:
+        shutil.rmtree(cfg.checkpoint_folder)
 
     if cfg.use_tensorboard:
         writer.close()

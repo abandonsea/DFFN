@@ -47,6 +47,7 @@ class DFFNConfig:
             self.results_folder = self.exec_folder + cfg['results_folder']
             self.checkpoint_folder = self. exec_folder + cfg['checkpoint_folder'] + self.dataset + '/'
             self.checkpoint_file = cfg['checkpoint_file']
+            self.delete_checkpoints = cfg['delete_checkpoints']
             self.print_frequency = cfg['print_frequency']
             self.use_tensorboard = cfg['use_tensorboard']
             if self.use_tensorboard:
