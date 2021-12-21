@@ -51,16 +51,13 @@ def add_noise(img, noise_params):
     # Applies an additive gaussian noise to every pixel with mean and variance defined by noise_param
     # noise_param = sigma; normal = [mu, sigma]
     elif noise_type == 'additive_gaussian':
-        for idx in range(out.shape[2]):
-            noise = np.random.normal(0.0, noise_amount, size=(img.shape[0], img.shape[1]))
-            out[:, :, idx] += noise
+        out += np.random.normal(0.0, noise_amount, size=img.shape)
 
     # Applies a multiplicative gaussian noise to every pixel with mean and variance defined by noise_param
     # noise_param = sigma; noise = normal(1.0, noise_param)
     elif noise_type == 'multiplicative_gaussian':
-        for idx in range(out.shape[2]):
-            noise = np.random.normal(1.0, noise_amount, size=(img.shape[0], img.shape[1]))
-            out[:, :, idx] = np.multiply(out[:, :, idx], noise)
+        out = np.multiply(out, np.random.normal(1.0, noise_amount, size=img.shape))
+
     else:
         raise Exception('Noise type not implemented')
 
