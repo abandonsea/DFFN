@@ -63,7 +63,7 @@ def test():
         # Load model
         model_file = cfg.exec_folder + f'runs/dffn_{test_best}model_run_' + str(run) + '.pth'
         model = nn.DataParallel(DFFN(cfg.sample_bands, num_classes))
-        model.load_state_dict(torch.load(model_file))
+        model.load_state_dict(torch.load(model_file, map_location=device))
         model.eval()
 
         # Set model to device
