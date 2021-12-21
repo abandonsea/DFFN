@@ -27,14 +27,14 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # SET TEST CONFIG FILE #
 ########################
 PATH = 'experiments/'
-EXPERIMENTS = ['server_salinas_01']
+EXPERIMENTS = ['server_03']
 
 NOISES = [['salt_and_pepper', 0], ['salt_and_pepper', 0.001], ['salt_and_pepper', 0.005], ['salt_and_pepper', 0.01],
           ['salt_and_pepper', 0.05],
-          ['additive_gaussian', 0.05], ['additive_gaussian', 0.1], ['additive_gaussian', 0.3],
-          ['additive_gaussian', 0.5], ['additive_gaussian', 1.0],
-          ['multiplicative_gaussian', 0.1], ['multiplicative_gaussian', 0.3], ['multiplicative_gaussian', 0.5],
-          ['multiplicative_gaussian', 1.0]]
+          ['additive_gaussian', 0.05], ['additive_gaussian', 0.1], ['additive_gaussian', 0.5],
+          ['additive_gaussian', 1.0],
+          ['multiplicative_gaussian', 0.1], ['multiplicative_gaussian', 0.5], ['multiplicative_gaussian', 1.0],
+          ['multiplicative_gaussian', 2.0]]
 
 
 # Test SAE-3DDRN runs
@@ -66,10 +66,10 @@ def test(config_file):
             test_loader = DataLoader(test_dataset, batch_size=cfg.test_batch_size, shuffle=False)
 
             # Load model
-            model_file = f'{cfg.exec_folder}runs/vscnn_{test_best}model_run_{run}.pth'
-            if cfg.dataset == 'paviau':
+            model_file = f'{cfg.exec_folder}runs/dffn_{test_best}model_run_{run}.pth'
+            if cfg.dataset == 'PaviaU':
                 model = nn.DataParallel(dffn_pavia.DFFN(cfg.sample_bands, num_classes))
-            elif cfg.dataset == 'salinas':
+            elif cfg.dataset == 'Salinas':
                 model = nn.DataParallel(dffn_salinas.DFFN(cfg.sample_bands, num_classes))
             else:  # indian pines
                 model = nn.DataParallel(dffn_indian.DFFN(cfg.sample_bands, num_classes))
