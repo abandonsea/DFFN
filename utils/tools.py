@@ -10,7 +10,7 @@ Created on Wed Sep 29 14:29 2021
 import torch
 import numpy as np
 from scipy import io
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.decomposition import PCA
 import random
 import os
@@ -70,7 +70,9 @@ class HSIData:
         self.num_classes = len(self.label_values) - len(self.ignored_labels)
 
         img = np.asarray(img, dtype='float32')
-        self.image, self.pca, _, _ = self.apply_dimension_reduction(img, num_bands)
+        self.num_bands = num_bands
+        self.raw_image = img
+        self.image, self.pca, self.sca1, self.sca2 = self.apply_dimension_reduction(img, num_bands)
 
     @staticmethod
     def apply_dimension_reduction(image, num_bands=5):
@@ -96,6 +98,51 @@ class HSIData:
         out_img = np.reshape(norm2_img, (image_height, image_width, num_bands))
 
         return out_img, pca, sca1, sca2  # Returning transformers for future usage
+
+    # Similar to apply_dimension_reduction, but uses saved parameters to transform any external image
+    def apply_transforms(self, image):
+        image_height, image_width, image_bands = image.shape
+        flat_image = np.reshape(image, (image_height * image_width, image_bands))
+
+        # Normalize data and apply PCA
+        norm1_img = self.sca1.transform(flat_image)
+        pca_img = self.pca.transform(norm1_img)
+        norm2_img = self.sca2.transform(pca_img)
+
+        out_img = np.reshape(norm2_img, (image_height, image_width, self.num_bands))
+
+        return out_img
+
+    # Normalize data and return normalization object to enable using its inverse later on
+    @staticmethod
+    def normalize(image, normalization='minmax'):
+        image_height, image_width, image_bands = image.shape
+        flat_image = np.reshape(image, (image_height * image_width, image_bands))
+
+        if normalization == 'minmax':
+            sca = MinMaxScaler()
+            sca.fit(flat_image)
+        elif normalization == 'standard':
+            sca = StandardScaler()
+            sca.fit(flat_image)
+        else:
+            raise ValueError(f'{normalization} normalization not implemented.')
+
+        norm_img = sca.transform(flat_image)
+        out_img = np.reshape(norm_img, (image_height, image_width, image_bands))
+
+        return out_img, sca
+
+    # Undo normalization with normalization object from the normalize function
+    @staticmethod
+    def denormalize(image, scaler):
+        image_height, image_width, image_bands = image.shape
+        flat_image = np.reshape(image, (image_height * image_width, image_bands))
+
+        denorm_img = scaler.inverse_transform(flat_image)
+        out_img = np.reshape(denorm_img, (image_height, image_width, image_bands))
+
+        return out_img
 
     # Split ground-truth pixels into train, test, val
     def sample_dataset(self, train_size=0.8, val_size=0.1, max_train_samples=None):
@@ -213,3 +260,22 @@ def save_results(filename, report, run, epoch=-1, validation=False):
         file.write('\n')
         file.write('#' * 70)
         file.write('\n\n')
+
+
+def save_noise_results(path, noise, report):
+    noise_type = noise[0]
+    noise_amount = noise[1]
+    filename = f'{path}noise_{noise_type}.nst'
+
+    with open(filename, 'a') as file:
+        file.write(f'Results for amount: {noise_amount}\n')
+        file.write(f'\n- OVERALL ACCURACY: {report["overall_accuracy"]:f}\n')
+        file.write(f'\n- AVERAGE ACCURACY: {report["average_accuracy"]:f}\n')
+        file.write(f'\n- KAPPA COEFFICIENT: {report["kappa"]:f}\n')
+        file.write('\n\n')
+
+    if not os.path.isdir(path + 'torch/'):
+        os.makedirs(path + 'torch/')
+
+    torch_filename = f'{path}torch/noise_{noise_type}_{noise_amount}.pth'
+    torch.save(report, torch_filename)
