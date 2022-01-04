@@ -31,10 +31,13 @@ EXPERIMENTS = ['server_03']
 
 NOISES = [['salt_and_pepper', 0], ['salt_and_pepper', 0.001], ['salt_and_pepper', 0.005], ['salt_and_pepper', 0.01],
           ['salt_and_pepper', 0.05],
-          ['additive_gaussian', 0.05], ['additive_gaussian', 0.1], ['additive_gaussian', 0.5],
-          ['additive_gaussian', 1.0],
-          ['multiplicative_gaussian', 0.1], ['multiplicative_gaussian', 0.5], ['multiplicative_gaussian', 1.0],
-          ['multiplicative_gaussian', 2.0]]
+          ['additive_gaussian', 0.05], ['additive_gaussian', 0.1], ['additive_gaussian', 0.3],
+          ['additive_gaussian', 0.5], ['additive_gaussian', 1.0],
+          ['multiplicative_gaussian', 0.1], ['multiplicative_gaussian', 0.3], ['multiplicative_gaussian', 0.5],
+          ['multiplicative_gaussian', 1.0],
+          ['section_mul_gaussian', 1], ['section_mul_gaussian', 2], ['section_mul_gaussian', 3],
+          ['section_mul_gaussian', 4], ['section_mul_gaussian', 5], ['section_mul_gaussian', 6],
+          ['section_mul_gaussian', 7], ['section_mul_gaussian', 8]]
 
 
 # Test SAE-3DDRN runs
