@@ -20,6 +20,17 @@ IMAGE_NAME = 'proc_image.pth'
 NOISE_TYPE = 'salt_and_pepper'
 NOISE_AMOUNT = 0.1
 
+SECTION_VARIANCE = 1.0
+
+
+def cond_swap(lim1, lim2, section):
+    a = section % 2
+    if section % 2 == 1:
+        aux = -lim1
+        lim1 = -lim2
+        lim2 = aux
+    return lim1 + 1, lim2 + 1
+
 
 def add_noise(img, noise_params):
     noise_type = noise_params[0]
@@ -57,6 +68,30 @@ def add_noise(img, noise_params):
     # noise_param = sigma; noise = normal(1.0, noise_param)
     elif noise_type == 'multiplicative_gaussian':
         out = np.multiply(out, np.random.normal(1.0, noise_amount, size=img.shape))
+
+    # Applies a multiplicative gaussian noise to every pixel except a chosen section of width == var [1, 8]
+    # noise_param = sigma; noise = normal(1.0, noise_param)
+    elif noise_type == 'section_mul_gaussian':
+        section = noise_amount
+        var = SECTION_VARIANCE
+        noise = np.random.normal(1.0, noise_amount, size=img.shape)
+
+        if section <= 2:
+            lim1, lim2 = cond_swap(0, var, section)
+        elif section <= 4:
+            lim1, lim2 = cond_swap(var, 2 * var, section)
+        elif section <= 6:
+            lim1, lim2 = cond_swap(2 * var, 3 * var, section)
+        else:
+            lim1, lim2 = cond_swap(3 * var, float('inf'), section)
+
+        idx1 = np.where(lim1 > noise)
+        idx2 = np.where(lim2 <= noise)
+
+        ones = np.ones_like(noise)
+        ones[idx1] = noise[idx1]
+        ones[idx2] = noise[idx2]
+        out = np.multiply(out, ones)
 
     else:
         raise Exception('Noise type not implemented')
