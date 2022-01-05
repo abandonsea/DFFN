@@ -93,6 +93,29 @@ def add_noise(img, noise_params):
         ones[idx2] = noise[idx2]
         out = np.multiply(out, ones)
 
+    # Applies a multiplicative gaussian noise to every pixel in a chosen section of width == var [1, 8]
+    # noise_param = sigma; noise = normal(1.0, noise_param)
+    elif noise_type == 'single_section_gaussian':
+        section = noise_amount
+        var = SECTION_VARIANCE
+        noise = np.random.normal(1.0, noise_amount, size=img.shape)
+
+        if section <= 2:
+            lim1, lim2 = cond_swap(0, var, section)
+        elif section <= 4:
+            lim1, lim2 = cond_swap(var, 2 * var, section)
+        elif section <= 6:
+            lim1, lim2 = cond_swap(2 * var, 3 * var, section)
+        else:
+            lim1, lim2 = cond_swap(3 * var, float('inf'), section)
+
+        idx1 = np.where(lim1 > noise)
+        idx2 = np.where(lim2 <= noise)
+
+        noise[idx1] = 1.0
+        noise[idx2] = 1.0
+        out = np.multiply(out, noise)
+
     else:
         raise Exception('Noise type not implemented')
 
