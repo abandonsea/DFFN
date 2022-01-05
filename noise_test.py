@@ -41,7 +41,10 @@ NOISES = [['salt_and_pepper', 0], ['salt_and_pepper', 0.001], ['salt_and_pepper'
           ['multiplicative_gaussian', 1.0],
           ['section_mul_gaussian', 1], ['section_mul_gaussian', 2], ['section_mul_gaussian', 3],
           ['section_mul_gaussian', 4], ['section_mul_gaussian', 5], ['section_mul_gaussian', 6],
-          ['section_mul_gaussian', 7], ['section_mul_gaussian', 8]]
+          ['section_mul_gaussian', 7], ['section_mul_gaussian', 8],
+          ['single_section_gaussian', 1], ['single_section_gaussian', 2], ['single_section_gaussian', 3],
+          ['single_section_gaussian', 4], ['single_section_gaussian', 5], ['single_section_gaussian', 6],
+          ['single_section_gaussian', 7], ['single_section_gaussian', 8]]
 
 
 # Test SAE-3DDRN runs
