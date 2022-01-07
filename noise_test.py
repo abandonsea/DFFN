@@ -47,6 +47,15 @@ NOISES = [['salt_and_pepper', 0], ['salt_and_pepper', 0.001], ['salt_and_pepper'
           ['single_section_gaussian', 7], ['single_section_gaussian', 8]]
 
 
+def check_pavia_model(model_dict):
+    has_block15 = False
+    for k in model_dict:
+        if 'block15' in k:
+            has_block15 = True
+
+    return has_block15
+
+
 # Test SAE-3DDRN runs
 def test(config_file):
     # Load config data from training
@@ -77,14 +86,19 @@ def test(config_file):
 
             # Load model
             model_file = f'{cfg.exec_folder}runs/dffn_{test_best}model_run_{run}.pth'
-            if cfg.dataset == 'PaviaU':
+            model_dict = torch.load(model_file, map_location=device)
+
+            # Check whether the paviau architecture was used for this model
+            is_pavia = check_pavia_model(model_dict)
+
+            if is_pavia:
                 model = nn.DataParallel(dffn_pavia.DFFN(cfg.sample_bands, num_classes))
             elif cfg.dataset == 'Salinas':
                 model = nn.DataParallel(dffn_salinas.DFFN(cfg.sample_bands, num_classes))
             else:  # indian pines
                 model = nn.DataParallel(dffn_indian.DFFN(cfg.sample_bands, num_classes))
 
-            model.load_state_dict(torch.load(model_file, map_location=device))
+            model.load_state_dict(model_dict)
             model.eval()
 
             # Set model to device
